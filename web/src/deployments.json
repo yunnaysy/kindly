@@ -1,0 +1,37 @@
+{
+  "31337": {
+    "chainId": 31337,
+    "token": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "registry": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+    "kindly": "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
+    "operator": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "deployBlock": 2,
+    "txs": {
+      "registry": "0x7e238d36b534a60833011d1a3a53560e0bbb7732d6d0f54e1054836ec400c66d",
+      "kindly": "0x09d2c9b0f2738712e7f2c81ec4577b8f2b73828d147eef91c5ac1a03bf92f528",
+      "mockToken": "0x055dc35823fa2ca48ff58a97823b6ffa7abd58c60048281f49b225a213200c56"
+    },
+    "explorer": {
+      "registry": null,
+      "kindly": null
+    },
+    "deployedAt": "2026-11-18T14:54:38.218Z"
+  },
+  "44005": {
+    "chainId": 44005,
+    "token": "0x456569838f1d43009A91ebA4263147Afd7233483",
+    "registry": "0xff6ce066fa19b68bd3150b8a2f0eff477fad2679",
+    "kindly": "0x944e66ba2642a2e83453e62bb48906f22eecb1b3",
+    "operator": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+    "deployBlock": 3499952,
+    "txs": {
+      "registry": "0x0c88ed18075ae3c194d94a4dcd40291d49be77f5933211e6dea38abb9c7a2107",
+      "kindly": "0x760d8c89a19afa97b4062a23bc928a02d087f1e29154ba0db6749c2d8ba5efb6"
+    },
+    "explorer": {
+      "registry": "https://explorer-test.qday.info/address/0xff6ce066fa19b68bd3150b8a2f0eff477fad2679",
+      "kindly": "https://explorer-test.qday.info/address/0x944e66ba2642a2e83453e62bb48906f22eecb1b3"
+    },
+    "deployedAt": "2026-11-18T14:55:07.807Z"
+  }
+}

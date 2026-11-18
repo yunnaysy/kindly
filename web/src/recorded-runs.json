@@ -1,0 +1,94 @@
+{
+  "31337": {
+    "finishedAt": "2026-11-18T14:54:38.400Z",
+    "kindly": "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
+    "decisions": [
+      {
+        "invoice": "INV-1001 $24.99",
+        "invoiceId": "0x5d8dd05adb76760977c307af7fed38a6c94e76f8255c70b55087b1b7bb5a5d9e",
+        "decision": "PAY",
+        "reason": "Ok",
+        "risk": 19,
+        "explanation": "Paid 0.02499 tUSD8 to \"Sunrise Coffee Co\". It matches the usual amount (0.025 tUSD8, 1.0x), the payee is confirmed and it fits the mandate.",
+        "hash": "0xa5b91f82eac2a859e7a3ab74341994158e3a6af1a312b3ea6f4e9484d1f52520",
+        "explorer": null
+      },
+      {
+        "invoice": "INV-1002 $149",
+        "invoiceId": "0x349c3e3df99a1c435ae4040e44d81c336ffa5d5745529d1803281e657dd40e02",
+        "decision": "HOLD",
+        "reason": "AmountAnomaly",
+        "risk": 75,
+        "explanation": "Held: 0.149 tUSD8 is 6.0x the usual 0.02499 tUSD8 for \"Sunrise Coffee Co\". A person needs to approve unusual amounts.",
+        "hash": "0x79ba525b39e1430f5c59f432e116f1253526a9e4db885752226e9d58ed69b871",
+        "explorer": null
+      },
+      {
+        "invoice": "INV-1001 re-sent $24.99",
+        "invoiceId": "0xfe1d149dd6afc5d65f0ac124bbbb638e64e9b22100b3a7dfcd29f37a2df76279",
+        "decision": "REJECT",
+        "reason": "Duplicate",
+        "risk": 95,
+        "explanation": "Rejected: \"Sunrise Coffee Co\" already got paid for this invoice number. Paying again would be a double payment.",
+        "hash": "0x743d0442d4ddcfa85cce813b9882350a63d9b87593ce093ff0a05b8fa81ba829",
+        "explorer": null
+      },
+      {
+        "invoice": "INV-1003 $250",
+        "invoiceId": "0xb2f9290a0673a922d5995878e12f380dbe19e55c76f48a0d0d45c72cc45ecd4d",
+        "decision": "REJECT",
+        "reason": "OverCap",
+        "risk": 90,
+        "explanation": "Rejected: 0.25 tUSD8 is above the per-payment cap of 0.2 tUSD8.",
+        "hash": "0xc2a8236bf240cfee36e98ec386e9919e691102d03e086facf898804a8bb8b028",
+        "explorer": null
+      }
+    ]
+  },
+  "44005": {
+    "finishedAt": "2026-11-18T14:57:34.484Z",
+    "kindly": "0x944e66ba2642a2e83453e62bb48906f22eecb1b3",
+    "decisions": [
+      {
+        "invoice": "INV-1001 $24.99",
+        "invoiceId": "0x4e8203ddf5e70fa83b225d30e5c45af78443ffc4d4a150e7eff0c1ee5c35eb0e",
+        "decision": "PAY",
+        "reason": "Ok",
+        "risk": 19,
+        "explanation": "Paid 0.02499 tUSD8 to \"Sunrise Coffee Co\". It matches the usual amount (0.025 tUSD8, 1.0x), the payee is confirmed and it fits the mandate.",
+        "hash": "0x98784b2c6080f9aa7fbaa74c845c5baef6a8ff75997484fea355afb8ce824253",
+        "explorer": "https://explorer-test.qday.info/tx/0x98784b2c6080f9aa7fbaa74c845c5baef6a8ff75997484fea355afb8ce824253"
+      },
+      {
+        "invoice": "INV-1002 $149",
+        "invoiceId": "0xe1ea77218d5b49b26494eb4c88b250f21c283d3b7190d32adcdfc1293b0c2c45",
+        "decision": "HOLD",
+        "reason": "AmountAnomaly",
+        "risk": 75,
+        "explanation": "Held: 0.149 tUSD8 is 6.0x the usual 0.02499 tUSD8 for \"Sunrise Coffee Co\". A person needs to approve unusual amounts.",
+        "hash": "0xd37ef58d52344b5d63b750f9197ae6095b28862f52581dbb8ac209a2d9495e6d",
+        "explorer": "https://explorer-test.qday.info/tx/0xd37ef58d52344b5d63b750f9197ae6095b28862f52581dbb8ac209a2d9495e6d"
+      },
+      {
+        "invoice": "INV-1001 re-sent $24.99",
+        "invoiceId": "0xc877091ac52cd186e9aad55143ad6a07e38f37f9b745c2a006d2bfe48d2e85cc",
+        "decision": "REJECT",
+        "reason": "Duplicate",
+        "risk": 95,
+        "explanation": "Rejected: \"Sunrise Coffee Co\" already got paid for this invoice number. Paying again would be a double payment.",
+        "hash": "0x94fad52aba092367e889dd6218a8ba81339db262a07a1e6f792c45d369c98f20",
+        "explorer": "https://explorer-test.qday.info/tx/0x94fad52aba092367e889dd6218a8ba81339db262a07a1e6f792c45d369c98f20"
+      },
+      {
+        "invoice": "INV-1003 $250",
+        "invoiceId": "0xbe6cb40bac83a1d55a581931d8c03f04775d6aa18683667edd0999afe0615a41",
+        "decision": "REJECT",
+        "reason": "OverCap",
+        "risk": 90,
+        "explanation": "Rejected: 0.25 tUSD8 is above the per-payment cap of 0.2 tUSD8.",
+        "hash": "0x1fd9c849a8ffada28afe16a5e47e61520e477700fac0f52e0363d778950985b1",
+        "explorer": "https://explorer-test.qday.info/tx/0x1fd9c849a8ffada28afe16a5e47e61520e477700fac0f52e0363d778950985b1"
+      }
+    ]
+  }
+}

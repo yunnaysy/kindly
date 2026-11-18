@@ -11,6 +11,8 @@ import KindlyArt from "../../shared/abi/Kindly.json";
 import RegistryArt from "../../shared/abi/PayeeRegistry.json";
 import deployments from "./deployments.json";
 import recordedRuns from "./recorded-runs.json";
+import "./app-shell.css";
+import { initPwa, installSection, isStandalone, isMobileDevice, dragToDismiss } from "./pwa.js";
 
 const K = KindlyArt.abi;
 const R = RegistryArt.abi;
@@ -63,13 +65,20 @@ const explorerLink = (hash, label = "View on explorer") => {
   return u ? h("a", { class: "ext", href: u, target: "_blank", rel: "noopener" }, label, ICON.ext()) : null;
 };
 function announce(msg) { const el = document.getElementById("sr-status"); if (el) { el.textContent = ""; setTimeout(() => (el.textContent = msg), 30); } }
+/** Haptics are punctuation: one short tick per outcome, on the same frame as the visual, never the only feedback (Android; iOS Safari has no web vibration). */
+const haptic = (kind) => { if (!navigator.vibrate || reduceMotion() || window.innerWidth > 1024) return; try { navigator.vibrate(kind === "error" ? [12, 60, 12] : 10); } catch {} };
 function toast(msg, kind = "info") {
+  if (kind === "ok" || kind === "error") haptic(kind);
   let box = document.getElementById("toasts");
   if (!box) { box = h("div", { id: "toasts", "aria-live": "polite" }); document.body.append(box); }
-  const t = h("div", { class: `toast ${kind}`, role: kind === "error" ? "alert" : "status" }, msg);
+  // Snackbar rules (Wise, Material, Geist via component.gallery): one short line, newest nearest the thumb, errors stay
+  // until dismissed and carry a close button, exits are faster than entrances.
+  const leave = () => { if (t.classList.contains("leaving")) return; t.classList.add("leaving"); setTimeout(() => t.remove(), reduceMotion() ? 0 : 150); };
+  const t = h("div", { class: `toast ${kind}`, role: kind === "error" ? "alert" : "status" }, h("span", { class: "toast-msg" }, msg),
+    kind === "error" ? h("button", { type: "button", class: "toast-x", "aria-label": "Dismiss", onclick: leave }, ICON.close()) : null);
   box.append(t);
   while (box.children.length > 3) box.firstChild.remove();
-  setTimeout(() => t.remove(), kind === "error" ? 9000 : 4500);
+  if (kind !== "error") { let timer = setTimeout(leave, 4500); t.onpointerenter = () => clearTimeout(timer); t.onpointerleave = () => (timer = setTimeout(leave, 2500)); }
 }
 function banner(msg) {
   const b = document.getElementById("banner");
@@ -96,6 +105,11 @@ const ICON = {
   spark: () => svg('<path d="M12 4.5l1.6 4.4 4.4 1.6-4.4 1.6L12 16.5l-1.6-4.4L6 10.5l4.4-1.6z"/>'),
   aevum: () => svg('<path d="M12 3.5l7.5 8.5-7.5 8.5L4.5 12z"/><path d="M12 8.5l3.2 3.5-3.2 3.5L8.8 12z"/>'),
   arrow: () => svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+  home: () => svg('<path d="M4.5 11L12 4.5l7.5 6.5"/><path d="M6.5 9.5V19h11V9.5"/>'),
+  receipt: () => svg('<path d="M6.5 3.5h11v17l-2.75-1.6-2.75 1.6-2.75-1.6-2.75 1.6z"/><path d="M9.5 8.5h5M9.5 12h5"/>'),
+  gear: () => svg('<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/>'),
+  phone: () => svg('<rect x="7" y="3.5" width="10" height="17" rx="2.5"/><path d="M11 17.5h2"/>'),
+  close: () => svg('<path d="M7 7l10 10M17 7L7 17"/>'),
 };
 /** tUSD8 token badge: a custom mark (a coin with two level bars, "stable"), used on every balance and amount. */
 const tok = () => h("span", { class: "tok", translate: "no" }, svg('<circle cx="12" cy="12" r="8.5"/><path d="M8.6 10.3h6.8M8.6 13.7h6.8"/>'), "tUSD8");
@@ -115,15 +129,56 @@ const skeleton = () => h("div", { class: "skeleton", role: "status", "aria-label
 
 // ------------------------------------------------------------------ wallet
 async function connect({ rerender = true } = {}) {
-  if (!window.ethereum) return toast("No browser wallet found. Install MetaMask, then reload.", "error");
+  if (!window.ethereum) return noWalletSheet();
   const [addr] = await window.ethereum.request({ method: "eth_requestAccounts" });
+  if (!addr) return;
   state.account = getAddress(addr);
   state.wallet = createWalletClient({ chain: CHAIN, transport: custom(window.ethereum), account: state.account });
   await ensureChain();
-  window.ethereum.on?.("accountsChanged", () => location.reload());
+  window.ethereum.on?.("accountsChanged", (accs) => { if (accs && accs.length) return location.reload(); disconnectLocal(); });
   window.ethereum.on?.("chainChanged", () => location.reload());
   await refreshHeader();
   if (rerender) route();
+}
+/** Disconnected in the wallet: forget the account here too, keep the app usable read-only. */
+function disconnectLocal() {
+  state.account = null; state.wallet = null; state.wrongNet = false;
+  document.getElementById("walletPop")?.remove();
+  const c = document.getElementById("connect");
+  c.className = "btn dark small"; c.removeAttribute("aria-haspopup"); c.removeAttribute("aria-expanded"); c.removeAttribute("aria-label");
+  c.replaceChildren(ICON.wallet(), h("span", {}, "Connect"));
+  document.getElementById("swName").textContent = "Not connected"; document.getElementById("swName").className = ""; document.getElementById("swNet").textContent = "Connect a wallet";
+  toast("Wallet disconnected. You can still watch the recorded demo.");
+  route();
+}
+/** Deep link that opens this exact page inside the MetaMask mobile browser. */
+const metamaskLink = () => `https://link.metamask.io/dapp/${location.host}${location.pathname}${location.search}${location.hash}`;
+/** No injected wallet: on phones, offer "Open in MetaMask"; on desktop, explain the extension. Either way the replay stays one tap away. */
+function noWalletSheet() {
+  const mobile = isMobileDevice();
+  sheet("No wallet in this browser", [
+    h("p", { class: "muted" }, mobile
+      ? "Phone browsers can't talk to a wallet directly. Open Kindly inside the MetaMask app's browser and connect from there. Your keys never leave MetaMask."
+      : "Kindly connects to a browser wallet such as the MetaMask extension. Install it, reload this page, then connect."),
+    mobile ? h("a", { class: "btn dark big wide", href: metamaskLink(), rel: "noopener" }, ICON.wallet(), "Open in MetaMask") : h("a", { class: "btn dark big wide", href: "https://metamask.io/download/", target: "_blank", rel: "noopener" }, ICON.wallet(), "Get MetaMask"),
+    mobile ? h("ol", { class: "plain small" }, h("li", {}, "MetaMask opens this page in its own browser."), h("li", {}, "Tap Connect and pick an account."), h("li", {}, "Switch to QDay Aevum Testnet when asked.")) : null,
+    h("hr", { class: "sep" }),
+    h("p", { class: "small muted" }, "Just looking? The recorded demo replays a real testnet run and needs no wallet."),
+    h("a", { class: "btn ghost wide", href: "#/demo?replay=1", "data-close": "" }, ICON.play(), "Watch the recorded demo"),
+  ]);
+}
+/** Bottom sheet on phones, centred dialog on larger screens. Native <dialog>: focus trap, Escape and backdrop close. */
+function sheet(title, body) {
+  document.getElementById("sheet")?.remove();
+  const close = h("button", { class: "icon-btn", type: "button", "aria-label": "Close" }, ICON.close());
+  const grab = h("div", {}, h("div", { class: "grabber", "aria-hidden": "true" }), h("div", { class: "row between" }, h("h2", { id: "sheet-title", class: "h3" }, title), close));
+  const dlg = h("dialog", { id: "sheet", class: "modal sheet", "aria-labelledby": "sheet-title" }, grab, ...[body].flat().filter(Boolean));
+  dragToDismiss(dlg, grab, () => dlg.close());
+  close.onclick = () => dlg.close();
+  dlg.addEventListener("close", () => dlg.remove());
+  dlg.addEventListener("click", (e) => { if (e.target === dlg || e.target.closest?.("[data-close]")) dlg.close(); });
+  document.body.append(dlg); dlg.showModal();
+  return dlg;
 }
 async function ensureChain() {
   const hex = await window.ethereum.request({ method: "eth_chainId" });
@@ -143,20 +198,31 @@ async function refreshHeader() {
   const label = CHAIN.id === 44005 ? "Aevum" : CHAIN.name;
   try {
     const bn = await pub.getBlockNumber();
-    net.replaceChildren(ICON.aevum(), h("span", {}, label), h("span", { class: "sr-only" }, `, testnet, latest block ${bn}`));
+    net.replaceChildren(ICON.aevum(), h("span", { class: "net-l" }, label), h("span", { class: "sr-only" }, `, testnet, latest block ${bn}`));
     net.title = `${CHAIN.name} · chain ${CHAIN.id} · block #${bn}`;
     net.className = "net ok";
   } catch {
     net.replaceChildren(ICON.aevum(), h("span", {}, `${label} unreachable`));
     net.className = "net bad";
   }
+  if (state.account && window.ethereum) {
+    const hex = await window.ethereum.request({ method: "eth_chainId" }).catch(() => null);
+    state.wrongNet = hex != null && Number(hex) !== CHAIN.id;
+    document.body.classList.toggle("wrong-net", state.wrongNet);
+    const wn = document.getElementById("wrongNet");
+    if (state.wrongNet && !wn) document.getElementById("banner").after(h("div", { id: "wrongNet", class: "netwarn", role: "alert" }, h("span", {}, `Your wallet is on another network. Kindly runs on ${CHAIN.name}.`), h("button", { class: "btn dark small", type: "button", onclick: () => ensureChain().then(refreshHeader).catch((e) => toast(humanError(e), "error")) }, "Switch network")));
+    else if (!state.wrongNet) wn?.remove();
+  }
   if (state.account) {
     state.balance = D.token ? await pub.readContract({ address: D.token, abi: erc20Abi, functionName: "balanceOf", args: [state.account] }).catch(() => state.balance ?? 0n) : 0n;
     const c = document.getElementById("connect");
-    c.replaceChildren(ICON.wallet(), h("span", { class: "mono" }, short(state.account)));
+    c.replaceChildren(...[ICON.wallet(), h("span", { class: "mono" }, short(state.account)), state.wrongNet ? h("span", { class: "warnd", "aria-hidden": "true" }) : null].filter(Boolean));
     c.className = "btn ghost small addr-pill"; c.setAttribute("aria-haspopup", "dialog"); c.setAttribute("aria-expanded", String(!!document.getElementById("walletPop")));
     c.setAttribute("aria-label", `Wallet ${short(state.account)}. Show balance`);
     const pop = document.getElementById("walletPop"); if (pop) pop.querySelector(".wp-bal")?.replaceChildren(money(state.balance, "big"));
+    const swn = document.getElementById("swName"); swn.textContent = short(state.account); swn.className = "mono";
+    document.getElementById("swNet").textContent = state.wrongNet ? "Wrong network" : `${fmt(state.balance ?? 0n)} tUSD8 · ${CHAIN.id === 44005 ? "Aevum" : CHAIN.name}`;
+    document.getElementById("sideWallet").setAttribute("aria-label", `Wallet ${short(state.account)}. Show balance`);
   }
 }
 /** Wallet panel: the balance lives here, not in the navbar. */
@@ -173,6 +239,7 @@ function toggleWalletPanel() {
     h("dl", { class: "kv" }, h("dt", {}, "Network"), h("dd", {}, aevumChip(CHAIN.id === 44005 ? "Aevum testnet" : CHAIN.name)), h("dt", {}, "Address"), h("dd", {}, addrLink(state.account))),
     h("p", { class: "small muted" }, "Kindly never holds your funds. Payments move straight from this wallet to the merchant."),
     h("a", { class: "btn dark small wide", href: "#/controls", onclick: () => close() }, "Open dashboard"));
+  const gz = h("div", {}, h("div", { class: "grabber", "aria-hidden": "true" })); pop.prepend(gz); dragToDismiss(pop, gz, () => { close(); btn.focus(); });
   btn.after(pop); btn.setAttribute("aria-expanded", "true");
   setTimeout(() => { document.addEventListener("keydown", onKey); document.addEventListener("pointerdown", onOut); pop.querySelector("button, a")?.focus(); }, 0);
 }
@@ -240,13 +307,14 @@ function trustModal(tab = "funds") {
         card("01", "Spending limits", "Each mandate has a per-payment cap, a total budget, an expiry and an optional cooldown. The contract rejects anything over the cap or over the remaining budget."),
         card("02", "Merchant verification", "Payments only go to merchants on the mandate's allowlist. The payee's registered name is re-checked on-chain (Confirmation of Payee), so a swapped link or a look-alike name is held or reverted."),
         card("03", "Human approval", "Unusual amounts (3× your usual or more) and name mismatches are put on HOLD. Only you, the mandate owner, can approve or reject a hold. Duplicate invoice numbers are always rejected."),
-        card("04", "Revoke & recover", "Freeze pauses the agent instantly. Revoke ends the mandate for good. Kindly never holds a deposit, so there is nothing to withdraw: set your token allowance to 0 and no one can pull funds through Kindly.")),
+        card("04", "Revoke & recover", "Freeze pauses the agent instantly. Revoke ends the mandate for good. Kindly never holds your funds, so there is nothing to withdraw: set your token allowance to 0 and no one can pull funds through Kindly.")),
       h("details", {}, h("summary", {}, "Implemented vs. roadmap"), h("div", { class: "body grid2" },
         h("div", { class: "stack" }, h("strong", {}, "Implemented (on testnet)"), h("ul", { class: "plain" }, ["Exact, bounded token approvals from the UI", "Per-payment cap, budget, allowlist, expiry, cooldown", "PAY / HOLD / REJECT decided by the contract, with a SafetyDecision event", "Owner-only approve, reject, freeze, revoke", "Duplicate-invoice and replay protection per payer, merchant and invoice number", "On-chain receipts anyone can verify"].map((x) => h("li", {}, x)))),
         h("div", { class: "stack" }, h("strong", {}, "Roadmap"), h("ul", { class: "plain" }, ["Two-person approval for large holds", "Independent KYB attesters instead of a single testnet operator", "Hashed memos with the text kept off-chain", "Session keys and a paymaster on Aevum", "External audit before any mainnet use"].map((x) => h("li", {}, x)))))),
       h("p", { class: "small muted" }, "Testnet software. It has automated tests but no external audit. Never use it with real funds."),
     ]);
   close.onclick = () => dlg.close();
+  const gz = h("div", {}, h("div", { class: "grabber", "aria-hidden": "true" })); dlg.prepend(gz); dragToDismiss(dlg, gz, () => dlg.close());
   dlg.addEventListener("close", () => dlg.remove());
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   document.body.append(dlg);
@@ -274,8 +342,8 @@ function viewHome() {
         h("span", { class: "netchip big" }, ICON.aevum(), "Live on QDay Aevum testnet"),
         h("h1", { class: "display" }, "Payments, handled. ", h("em", {}, "Safely.")),
         h("p", { class: "lead" }, "Your AI agent can pay invoices for you. Kindly makes sure every payment is verified, within your rules, and safe to approve."),
-        h("div", { class: "cta" }, h("a", { class: "btn big", href: "#/demo" }, "Run the live demo", h("span", { class: "arrow" }, ICON.arrow())), h("a", { class: "btn ghost big", href: "#/start" }, "Set up your agent")),
-        h("ul", { class: "proof" }, h("li", {}, "Decided on-chain"), h("li", {}, "Exact allowances, never a deposit"), h("li", {}, "Freeze or revoke in one tap"))),
+        h("div", { class: "cta sticky-cta" }, h("a", { class: "btn big", href: "#/demo" }, "Run the live demo", h("span", { class: "arrow" }, ICON.arrow())), h("a", { class: "btn ghost big", href: "#/start" }, "Set up your agent")),
+        h("ul", { class: "proof" }, h("li", {}, "Decided on-chain"), h("li", {}, "Bounded allowances, your funds stay put"), h("li", {}, "Freeze or revoke in one tap"))),
       card.el),
     h("div", { class: "steps3" },
       step3("01", "Verify", "Every payee is checked against an on-chain registry. A look-alike name or a swapped link never gets paid."),
@@ -398,7 +466,7 @@ function viewDemo() {
 
   root.append(
     pageHead("Live demo", "Three invoices. Three decisions.", "Watch Kindly pay the routine invoice, pause an unusual amount for your approval, and block a duplicate, automatically."),
-    h("div", { class: "stage" }, gate, grid, h("div", { class: "runbar" }, progress, h("div", { class: "row" }, replayBtn, runBtn)), summary, exec),
+    h("div", { class: "stage" }, gate, grid, h("div", { class: "runbar" }, progress, h("div", { class: "row sticky-cta" }, replayBtn, runBtn)), summary, exec),
     recordedRunCard());
 
   const add = (label) => {
@@ -567,12 +635,16 @@ async function viewControl() {
   const recent = h("ul", { class: "activity" }, h("li", {}, skeleton()));
   const more = h("div", { class: "stack" });
   const funds = h("div", { class: "card panel funds" }, skeleton());
-  root.append(head, holds, top,
-    h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Recent activity"), h("span", { class: "muted small" }, "Safety Gate decisions")), recent,
-      h("details", {}, h("summary", {}, "All activity"), h("div", { class: "body" }, more))),
-    funds,
-    h("div", { class: "row between" }, h("h2", { class: "h3" }, "Mandates"), h("a", { class: "btn ghost small", href: "#/start" }, "Add a mandate")),
-    list);
+  const receipts = h("ul", { class: "activity rlist" }, h("li", {}, skeleton()));
+  // Desktop: overview (agent + allowance) | holds and receipts. Tablet and phone: one column, holds first.
+  root.append(head, h("div", { class: "dash-grid" },
+    h("div", { class: "dash-main" }, holds, top, funds,
+      h("div", { class: "row between" }, h("h2", { class: "h3" }, "Mandates"), h("a", { class: "btn ghost small", href: "#/start" }, "Add a mandate")),
+      list),
+    h("div", { class: "dash-side" },
+      h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Recent activity"), h("span", { class: "muted small" }, "Safety Gate decisions")), recent,
+        h("details", {}, h("summary", {}, "All activity"), h("div", { class: "body" }, more))),
+      h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Your receipts"), h("a", { class: "small", href: "#/activity" }, "All receipts")), receipts))));
 
   async function load() {
     const created = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "MandateCreated", args: { owner: state.account }, fromBlock: fromBlock() });
@@ -592,6 +664,12 @@ async function viewControl() {
     funds.replaceChildren(...fundsPanel(ms, allowance).childNodes);
     list.replaceChildren(...(cards.length ? cards : [h("div", { class: "card empty-state" }, h("p", { class: "muted" }, "No mandates yet. A mandate tells your agent what it may pay."), h("a", { class: "btn dark small", href: "#/start" }, "Set up your agent"))]));
 
+    const paidLogs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoicePaid", args: { paidBy: state.account }, fromBlock: fromBlock() }).catch(() => []);
+    receipts.replaceChildren(...(paidLogs.length ? await Promise.all(paidLogs.slice(-4).reverse().map(async (lg) => {
+      const ts = await blockTime(lg.blockNumber);
+      return h("li", {}, h("span", { class: "r-ic", "aria-hidden": "true" }, ICON.receipt()), h("div", { class: "a-main" }, money(lg.args.amount), h("span", { class: "small muted" }, lg.args.mandateId > 0n ? `Paid by your agent · mandate #${lg.args.mandateId}` : "Paid directly")),
+        h("span", { class: "small muted a-time" }, ts ? h("time", { datetime: new Date(ts * 1000).toISOString() }, ago(ts)) : ""), h("a", { class: "small", href: `#/activity?id=${lg.args.id}`, "aria-label": "Verify this receipt" }, "Verify"));
+    })) : [h("li", { class: "empty" }, h("span", { class: "muted" }, "No receipts yet. Every settled payment leaves one you can verify."))]));
     const decs = [];
     for (const id of ids.slice(0, 12)) decs.push(...(await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "SafetyDecision", args: { mandateId: id }, fromBlock: fromBlock() })));
     decs.sort((x, y) => Number(y.blockNumber - x.blockNumber));
@@ -624,6 +702,8 @@ async function viewControl() {
       : h("div", { class: "calm" }, ICON.check(), "Nothing is waiting for your approval."));
   }
   await load();
+  // Sidebar "Freeze agent" lands here: bring the real Freeze button into view and focus it. Freezing still takes a tap and a wallet confirmation.
+  if (/[?&]freeze=1/.test(location.hash)) setTimeout(() => { const f = root.querySelector(".btn.freeze"); if (f) { f.scrollIntoView({ block: "center", behavior: reduceMotion() ? "auto" : "smooth" }); f.focus({ preventScroll: true }); } }, 50);
   const timer = setInterval(() => { if (!document.body.contains(root)) return clearInterval(timer); if (!document.querySelector("#app input:focus, #app details.drawer[open]")) load().catch(() => {}); }, 12000);
   return root;
 }
@@ -670,7 +750,7 @@ function walletCard(bal, allowance, reload) {
     h("div", { class: "row wc-meta" }, aevumChip(CHAIN.id === 44005 ? "Aevum testnet" : CHAIN.name), h("span", {}, "Available in wallet")),
     h("hr", {}),
     h("div", { class: "row between" }, h("div", { class: "stack", style: "gap:2px" }, h("span", { class: "wc-small" }, "Kindly may move at most"), h("b", { class: "n" }, fmt(allowance), " tUSD8")), allowance > 0n ? zero : h("span", { class: "wc-small" }, "Nothing can be pulled")),
-    h("p", { class: "wc-small" }, "Your funds stay here. Kindly only holds a permission, never a deposit."));
+    h("p", { class: "wc-small" }, "Your funds stay here. Kindly only holds a bounded allowance, never your funds."));
 }
 
 function fundsPanel(ms, allowance) {
@@ -838,7 +918,7 @@ async function viewStart() {
           h("dt", {}, "Network"), h("dd", {}, aevumChip(CHAIN.id === 44005 ? "Aevum testnet" : CHAIN.name), h("span", { class: "small muted" }, ` chain ${CHAIN.id}`)),
           h("dt", {}, "Estimated gas"), h("dd", {}, gas)),
         h("div", { class: "means" }, h("strong", {}, "What this approval means"),
-          h("ul", { class: "plain" }, h("li", {}, "Your tUSD8 stays in your wallet. Nothing is deposited."), h("li", {}, "Kindly can move at most this amount, only to merchants your mandate allows."), h("li", {}, "You can reduce it to 0 or revoke it from the dashboard at any time."))),
+          h("ul", { class: "plain" }, h("li", {}, "Your tUSD8 stays in your wallet. Kindly never holds it."), h("li", {}, "Kindly can move at most this amount, only to merchants your mandate allows."), h("li", {}, "You can reduce it to 0 or revoke it from the dashboard at any time."))),
         h("p", { class: "small muted" }, "Your wallet will show the same spender address. If it doesn't match, reject the request."))));
   }
 
@@ -883,7 +963,7 @@ async function viewStart() {
         field("Usual amount (tUSD8)", usual, "Invoices at 3× this or more wait for your approval"), field("Valid for (days)", days),
         field("Cooldown between payments (minutes)", cooldown)),
       h("label", { class: "check" }, verified, "Verified merchants only (others wait for your approval)"),
-      h("div", { class: "row between" }, h("a", { class: "btn ghost", href: "#/start?step=1" }, "Back"), next)));
+      h("div", { class: "row between sticky-cta" }, h("a", { class: "btn ghost", href: "#/start?step=1" }, "Back"), next)));
   }
 
   if (step === 3) {
@@ -989,7 +1069,7 @@ async function viewReview() {
     h("div", { class: "grid2 outcomes" },
       h("div", {}, h("strong", {}, "If you approve"), h("p", { class: "small muted" }, `Kindly pays ${fromUnits(inv.amount)} tUSD8 from your wallet to ${name}, once. Your mandate's limits don't change.`)),
       h("div", {}, h("strong", {}, "If you reject"), h("p", { class: "small muted" }, "Nothing is paid. The invoice stays unpaid and the merchant can send a corrected one."))),
-    resolved ? h("p", { class: "calm" }, ICON.check(), `This hold was already resolved. Invoice status: ${STATUS[inv.status]}.`) : h("div", { class: "row" }, approve, reject),
+    resolved ? h("p", { class: "calm" }, ICON.check(), `This hold was already resolved. Invoice status: ${STATUS[inv.status]}.`) : h("div", { class: "row sticky-cta" }, approve, reject),
     h("details", {}, h("summary", {}, "Technical details"), h("div", { class: "body" }, h("dl", { class: "kv" },
       h("dt", {}, "Safety Gate"), h("dd", {}, `HOLD · ${reason}`),
       h("dt", {}, "Risk score"), h("dd", {}, riskView(hold.risk)),
@@ -1189,7 +1269,7 @@ async function viewPay() {
     h("p", { class: "for" }, sanitizeText(memo) || "No memo"),
     payto,
     h("label", {}, "Name you were told (Confirmation of Payee)", expectedIn),
-    st === "Open" && !expired ? payBtn : null,
+    st === "Open" && !expired ? h("div", { class: "sticky-cta solo" }, payBtn) : null,
     h("div", { class: "secured" }, ICON.gate(), "Secured by Kindly Safety Gate · expires ", new Date(Number(inv.expiresAt) * 1000).toLocaleString()),
     h("div", { class: "secured" }, "Your tokens stay in your wallet until this payment. ", trustLink("What's visible on-chain", "privacy")),
     inv.payer !== zeroAddress ? h("p", { class: "small muted", style: "text-align:center" }, "Billed to ", addrLink(inv.payer)) : null].filter(Boolean));
@@ -1233,13 +1313,64 @@ async function viewActivity() {
   return root;
 }
 
+// ------------------------------------------------------------------ Settings (app tab): wallet, network, safety, install, privacy
+function viewSettings() {
+  setTitle("Settings");
+  const root = h("section", { class: "view" }, pageHead(null, "Settings", "Your wallet, the network, and how Kindly protects you."));
+  const row = (icon, title, sub, action) => h("li", { class: "set-row" }, h("span", { class: "set-ic", "aria-hidden": "true" }, icon), h("span", { class: "set-txt" }, h("b", {}, title), sub ? h("small", {}, sub) : null), action || null);
+  const go = (href, label) => h("a", { class: "set-go", href, "aria-label": label }, svg('<path d="M9 6l6 6-6 6"/>'));
+  root.append(
+    h("div", { class: "settings-grid" },
+      h("div", { class: "stack", style: "gap:20px" },
+        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "Wallet"), h("ul", { class: "set-list" },
+          state.account
+            ? row(ICON.wallet(), short(state.account), state.wrongNet ? "Connected · wrong network" : "Connected", h("button", { class: "btn ghost small", type: "button", onclick: () => toggleWalletPanel() }, "Details"))
+            : row(ICON.wallet(), "Not connected", window.ethereum ? "Connect to manage your agent" : isMobileDevice() ? "Open Kindly in the MetaMask app to connect" : "Needs a browser wallet such as MetaMask", h("button", { class: "btn dark small", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, "Connect")),
+          row(ICON.aevum(), CHAIN.id === 44005 ? "QDay Aevum Testnet" : CHAIN.name, `Chain ${CHAIN.id} · test tokens only`, h("a", { class: "small", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Faucet")))),
+        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "Safety"), h("ul", { class: "set-list" },
+          row(ICON.snow(), "Freeze your agent", "Stops every payment at once. Find it on Payments.", go("#/controls", "Open Payments to freeze your agent")),
+          row(ICON.gate(), "Allowance and limits", "Kindly may only move a bounded allowance. Reduce it to 0 any time.", go("#/controls", "Open Payments")),
+          row(ICON.shield(), "How your funds are protected", "Spending limits, verified merchants, human approval", h("button", { class: "btn ghost small", type: "button", onclick: () => trustModal("funds") }, "Read")),
+          row(ICON.ext(), "What's visible on-chain", "Blockchains are public. Keep personal details out of memos.", h("button", { class: "btn ghost small", type: "button", onclick: () => trustModal("privacy") }, "Read"))))),
+      h("div", { class: "stack", style: "gap:20px" },
+        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "App"), installSection(h, ICON)),
+        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "About"), h("ul", { class: "set-list" },
+          row(ICON.play(), "Recorded demo", "Replays a real testnet run, no wallet needed", go("#/demo?replay=1", "Watch the recorded demo")),
+          row(ICON.receipt(), "Source code", "MIT licensed, on GitHub", h("a", { class: "small", href: "https://github.com/yunnaysy/kindly", target: "_blank", rel: "noopener" }, "Open")))),
+        h("p", { class: "small muted" }, "Testnet software with automated tests and no external audit. Never use it with real funds."))));
+  return root;
+}
+
 // ------------------------------------------------------------------ router
+const TAB_TITLE = (p) => p.startsWith("/demo") ? "Live demo" : /^\/(control|start|review)/.test(p) ? "Payments" : /^\/(invoices|merchant|pay|activity)/.test(p) ? "Invoices" : p.startsWith("/settings") ? "Settings" : "Kindly";
+/** Phones: tables become stacked cards; each cell gets its column name as a label. */
+new MutationObserver(() => { for (const t of $app.querySelectorAll("table:not([data-labelled])")) { const hs = [...t.querySelectorAll("thead th")].map((x) => x.textContent); t.querySelectorAll("tbody tr").forEach((tr) => [...tr.children].forEach((td, i) => hs[i] && td.setAttribute("data-label", hs[i]))); if (t.tBodies[0]?.rows.length) t.dataset.labelled = "1"; } }).observe($app, { childList: true, subtree: true });
+let lastTab = -1, lastPath = "";
+// Re-tapping the active tab returns to the top of that tab (native tab-bar convention).
+document.getElementById("nav").addEventListener("click", (e) => {
+  const a = e.target.closest("a"); if (!a) return;
+  if (a.getAttribute("href") === location.hash || (a.getAttribute("href") === "#/" && !location.hash)) { e.preventDefault(); window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); }
+});
+/** iOS-style large title: the compact title in the app bar appears only once the page's large title has scrolled away. */
+let titleIO = null;
+function watchLargeTitle() {
+  titleIO?.disconnect();
+  const big = $app.querySelector("h1"); const bar = document.querySelector(".appbar-title");
+  if (!big || !("IntersectionObserver" in window)) { bar.classList.add("shown"); return; }
+  bar.classList.remove("shown");
+  titleIO = new IntersectionObserver(([en]) => bar.classList.toggle("shown", !en.isIntersecting), { rootMargin: "-56px 0px 0px 0px" });
+  titleIO.observe(big);
+}
 async function route() {
   const path = location.hash.replace(/^#/, "").split("?")[0] || "/";
   document.querySelectorAll("#nav a").forEach((a) => {
     const on = a.dataset.match.split(" ").some((m) => (m === "/" ? path === "/" : path.startsWith(m)));
     a.classList.toggle("active", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
+  const tabs = [...document.querySelectorAll("#nav a")]; const ti = Math.max(0, tabs.findIndex((a) => a.classList.contains("active")));
+  // Tabs are peers: switching tabs never slides. Going deeper inside a tab (e.g. Payments → Review) is a push.
+  const deeper = ti === lastTab && path !== lastPath && path.split("/").length > (lastPath.split("/").length || 0);
+  document.documentElement.dataset.dir = deeper ? "push" : ti === lastTab ? "same" : "tab"; lastTab = ti; lastPath = path;
   $app.replaceChildren(h("section", { class: "view" }, skeleton()));
   try {
     let v;
@@ -1250,11 +1381,43 @@ async function route() {
     else if (path.startsWith("/invoices") || path.startsWith("/merchant")) v = await viewMerchant();
     else if (path.startsWith("/pay")) v = await viewPay();
     else if (path.startsWith("/activity")) v = await viewActivity();
+    else if (path.startsWith("/settings")) v = viewSettings();
     else v = viewHome();
     $app.replaceChildren(v);
+    document.querySelector(".appbar-title").textContent = TAB_TITLE(path);
+    watchLargeTitle();
   } catch (e) {
     $app.replaceChildren(h("section", { class: "view" }, h("div", { class: "card" }, h("p", { class: "warn" }, humanError(e)), h("div", { class: "row" }, h("button", { class: "btn ghost small", onclick: () => route() }, "Try again"), h("a", { class: "btn ghost small", href: "#/" }, "Go home")))));
   }
+}
+// ------------------------------------------------------------------ sidebar: collapse to an icon rail, arrow-key navigation, wallet block
+{
+  const root = document.documentElement, tog = document.getElementById("sideToggle");
+  const desk = window.matchMedia("(min-width: 1024px)");
+  const sync = () => {
+    const expanded = desk.matches ? !root.classList.contains("side-collapsed") : root.classList.contains("side-open");
+    tog.setAttribute("aria-expanded", String(expanded)); tog.setAttribute("aria-label", expanded ? "Collapse sidebar" : "Expand sidebar");
+  };
+  if (localStorage.getItem("kindly.side") === "rail") root.classList.add("side-collapsed");
+  tog.onclick = () => {
+    if (desk.matches) { root.classList.toggle("side-collapsed"); localStorage.setItem("kindly.side", root.classList.contains("side-collapsed") ? "rail" : "full"); }
+    else { root.classList.toggle("side-open"); if (root.classList.contains("side-open")) document.querySelector("#nav a.active, #nav a")?.focus(); }
+    sync();
+  };
+  document.querySelector(".main-col").addEventListener("click", (e) => { if (root.classList.contains("side-open") && !e.target.closest("button, a")) { root.classList.remove("side-open"); sync(); } });
+  // Rail tooltips: the label stays in the accessibility tree, title shows it on hover.
+  document.querySelectorAll("#nav a, .side-freeze").forEach((a) => a.title = a.textContent.trim());
+  desk.addEventListener?.("change", () => { root.classList.remove("side-open"); sync(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && root.classList.contains("side-open")) { root.classList.remove("side-open"); sync(); tog.focus(); } });
+  document.getElementById("nav").addEventListener("click", () => { if (root.classList.contains("side-open")) { root.classList.remove("side-open"); sync(); } });
+  // Up/Down/Home/End move between sidebar destinations (Tab still walks the page normally).
+  document.getElementById("nav").addEventListener("keydown", (e) => {
+    const links = [...document.querySelectorAll("#nav a")]; const i = links.indexOf(document.activeElement); if (i < 0) return;
+    const j = { ArrowDown: i + 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowLeft: i - 1, Home: 0, End: links.length - 1 }[e.key];
+    if (j == null) return; e.preventDefault(); links[(j + links.length) % links.length].focus();
+  });
+  sync();
+  document.getElementById("sideWallet").onclick = () => document.getElementById("connect").click();
 }
 document.getElementById("connect").onclick = () => (state.account ? toggleWalletPanel() : connect().catch((e) => toast(humanError(e), "error")));
 window.addEventListener("hashchange", () => { document.getElementById("walletPop")?.remove(); route(); window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); });
@@ -1264,4 +1427,5 @@ else if (CHAIN.id !== 44005) banner(`Local development chain (${CHAIN.name}). Te
 void REASON;
 refreshHeader();
 setInterval(refreshHeader, 15000);
+initPwa({ h, icon: ICON, appName: "Kindly", offlineText: "Wallet and payment state may be outdated. Balances, holds and receipts refresh when you reconnect." });
 route();

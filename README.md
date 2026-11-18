@@ -142,6 +142,21 @@ Final mandate state: spent 0.02499 of 0.5 tUSD8, cap lowered to 0.1, revoked. Re
 
 (Screenshots come from a local Anvil run of the same build.)
 
+## Installable on phones (PWA)
+
+Kindly looks and behaves like a native app on a phone, without an APK. Open https://kindly-lemon.vercel.app on your phone, then **Add to Home Screen** (iOS: Share → Add to Home Screen; Android: the install prompt or ⋮ → Install app). It opens full screen with its own icon, a bottom tab bar (Home · Demo · Payments · Invoices · Settings), bottom sheets and sticky actions. On desktop you get a sidebar (collapsible to an icon rail) and multi-column dashboards; on tablet, an icon rail.
+
+- **Wallet on a phone:** phone browsers have no wallet, so Connect offers **Open in MetaMask**, which reopens Kindly inside MetaMask's browser. The recorded demo works with no wallet at all.
+- **Offline:** the app shell loads offline, but wallet and payment state is never cached; Kindly says so instead of showing stale balances.
+
+| Phone | Phone | Phone | Phone |
+|---|---|---|---|
+| ![Home](docs/screenshots/mobile-home.png) | ![Payments](docs/screenshots/mobile-payments.png) | ![Hold review](docs/screenshots/mobile-hold-review.png) | ![Open in MetaMask](docs/screenshots/mobile-open-in-metamask.png) |
+
+| Desktop | Tablet |
+|---|---|
+| ![Desktop payments](docs/screenshots/desktop-payments.png) | ![Tablet](docs/screenshots/tablet-payments.png) |
+
 ## Architecture
 
 ```
@@ -208,7 +223,7 @@ To deploy your own copy, put a funded key in `DEPLOYER_SECRET.txt` (`PRIVATE_KEY
 ```bash
 npm run deploy      # PayeeRegistry + Kindly bound to the official tUSD8 → deployments/deployments.json
 npm run e2e         # the full flow above; refunds everything at the end
-npm run build:web   # static site in web/dist (Vercel/Netlify/IPFS), or: docker build -t kindly . && docker run -p 8080:80 kindly
+npm run build:web   # fetches the Fontshare fonts (npm run fonts), then builds the static site in web/dist (Vercel/Netlify/IPFS), or: docker build -t kindly . && docker run -p 8080:80 kindly
 ```
 
 ### Run the assistant continuously

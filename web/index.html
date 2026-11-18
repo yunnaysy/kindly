@@ -2,41 +2,75 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
     <title>Kindly · Payments, handled. Safely.</title>
     <meta name="description" content="Your AI agent can pay invoices for you. Kindly makes sure every payment is verified, within your rules, and safe to approve. Live on QDay Aevum Testnet." />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://rpc-test.qday.info wss://rpc-test.qday.info http://127.0.0.1:8545 http://localhost:8545 ws://localhost:5173; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://rpc-test.qday.info wss://rpc-test.qday.info http://127.0.0.1:8545 http://localhost:8545 ws://localhost:5173; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="theme-color" content="#F8F6F1" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Kindly" />
+    <meta name="application-name" content="Kindly" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="preload" href="./fonts/satoshi-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/satoshi-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./fonts/fonts.css" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='10' fill='%23302E2B'/><path d='M16 6l8 3.4v5.7c0 5.2-3.4 9.5-8 11.3-4.6-1.8-8-6.1-8-11.3V9.4z' fill='none' stroke='%23F8F6F1' stroke-width='2' stroke-linejoin='round'/><circle cx='16' cy='13' r='1.8' fill='%23F8F6F1'/><circle cx='12.6' cy='18.4' r='1.8' fill='%23F8F6F1'/><circle cx='19.4' cy='18.4' r='1.8' fill='%23F8F6F1'/></svg>" />
   </head>
   <body>
     <a class="skip" href="#app">Skip to content</a>
-    <header class="top">
-      <div class="top-inner">
-        <a class="brand" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/></svg></span><span>kindly</span><span class="tagline">Payments, taken care of.</span></a>
-        <nav id="nav" aria-label="Main">
-          <a href="#/" data-match="/">Product</a>
-          <a href="#/demo" data-match="/demo">Demo</a>
-          <a href="#/controls" data-match="/control /start /review">Dashboard</a>
-          <a href="#/invoices" data-match="/invoices /merchant /pay /activity">Invoices</a>
-        </nav>
-        <div class="wallet">
-          <span id="net" class="net" title="Network">Connecting…</span>
-          <button id="connect" class="btn dark small">Connect wallet</button>
+    <div class="shell">
+      <aside class="side" id="side">
+        <div class="side-head">
+        <a class="brand" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/></svg></span><span class="brand-word">kindly</span></a>
+        <button type="button" id="sideToggle" class="side-toggle" aria-controls="side" aria-expanded="true" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.5 4.5v15"/></svg></button>
         </div>
+        <nav id="nav" aria-label="Main">
+          <p class="nav-group" id="ng-1">Overview</p>
+          <ul class="nav-list" role="list" aria-labelledby="ng-1">
+            <li><a href="#/" data-match="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 11L12 4.5l7.5 6.5"/><path d="M6.5 9.5V19h11V9.5"/></svg><span>Home</span></a></li>
+            <li><a href="#/demo" data-match="/demo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.2 5.1A.8.8 0 0 0 8 5.8z"/></svg><span>Demo</span></a></li>
+          </ul>
+          <p class="nav-group" id="ng-2">Money</p>
+          <ul class="nav-list" role="list" aria-labelledby="ng-2">
+            <li><a href="#/controls" data-match="/control /start /review"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Payments</span></a></li>
+            <li><a href="#/activity" data-match="/invoices /merchant /pay /activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h11v17l-2.75-1.6-2.75 1.6-2.75-1.6-2.75 1.6z"/><path d="M9.5 8.5h5M9.5 12h5"/></svg><span>Invoices</span></a></li>
+          </ul>
+          <p class="nav-group" id="ng-3">Account</p>
+          <ul class="nav-list" role="list" aria-labelledby="ng-3">
+            <li><a href="#/settings" data-match="/settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/></svg><span>Settings</span></a></li>
+          </ul>
+        </nav>
+        <div class="side-foot">
+          <a class="side-freeze" href="#/controls?freeze=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></svg><span>Freeze agent</span></a>
+          <button type="button" id="sideWallet" class="side-wallet"><span class="sw-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7.5V7a2 2 0 0 1 2-2h10"/><rect x="4" y="7.5" width="16" height="11.5" rx="2.5"/><path d="M15.5 13.25h1.5"/></svg></span><span class="sw-txt"><b id="swName">Not connected</b><small id="swNet">Connect a wallet</small></span></button>
+          <p class="side-note">Testnet only. Kindly only ever holds a bounded allowance, never your funds.</p>
+        </div>
+      </aside>
+      <div class="main-col">
+        <header class="top">
+          <div class="top-inner">
+            <a class="brand brand-m" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/></svg></span><span class="brand-word">kindly</span></a>
+            <span class="appbar-title" aria-hidden="true">Kindly</span>
+            <div class="wallet">
+              <span id="net" class="net" title="Network">Connecting…</span>
+              <button id="connect" class="btn dark small"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5V7a2 2 0 0 1 2-2h10"/><rect x="4" y="7.5" width="16" height="11.5" rx="2.5"/><path d="M15.5 13.25h1.5"/></svg><span>Connect</span></button>
+            </div>
+          </div>
+        </header>
+        <div id="banner" class="banner hidden"></div>
+        <main id="app" tabindex="-1"></main>
+        <div id="sr-status" class="sr-only" role="status" aria-live="polite"></div>
+        <footer>
+          <span>Testnet only. QDay Aevum (chain 44005), tUSD8 test stablecoin.</span>
+          <span><a href="https://faucet.qday.info/en" target="_blank" rel="noopener">Faucet</a> · <a href="https://explorer-test.qday.info" target="_blank" rel="noopener">Explorer</a> · <a href="https://github.com/yunnaysy/kindly" target="_blank" rel="noopener">Source</a></span>
+        </footer>
       </div>
-    </header>
-    <div id="banner" class="banner hidden"></div>
-    <main id="app" tabindex="-1"></main>
-    <div id="sr-status" class="sr-only" role="status" aria-live="polite"></div>
-    <footer>
-      <span>Testnet only. QDay Aevum (chain 44005), tUSD8 test stablecoin.</span>
-      <span><a href="https://faucet.qday.info/en" target="_blank" rel="noopener">Faucet</a> · <a href="https://explorer-test.qday.info" target="_blank" rel="noopener">Explorer</a> · <a href="https://github.com/yunnaysy/kindly" target="_blank" rel="noopener">Source</a></span>
-    </footer>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

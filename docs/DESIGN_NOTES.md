@@ -24,12 +24,13 @@ The primary spec came from a ChatGPT critique of the old UI (summarized below). 
 
 Radius: cards 20px, panels 24px, the demo stage 28px. Shadows: card `0 4px 24px rgba(48,46,43,.045)`, floating `0 12px 32px rgba(48,46,43,.08)`, lifted `0 18px 48px rgba(48,46,43,.12)`.
 
-## Type (Google Fonts)
+## Type (Fontshare, self-hosted)
 
-- **DM Sans** 600 for headlines: hero 56px, page titles 30 to 36px, letter-spacing −0.02em.
-- **Inter** for the UI: body 15.5px, secondary 13 to 14px, buttons 14.5px/600.
-- **JetBrains Mono** 12 to 13px for addresses, hashes, invoice IDs and risk scores.
-- **Instrument Serif** italic for one word only: "*Safely.*" in the hero. It is the editorial serif accent seen in the @e1genqq studio reel and in the land-book and godly galleries.
+- **Satoshi** (Fontshare) for headlines and UI: hero 56px/700, page titles 30 to 36px, body 15.5px/400, buttons 14.5px/700. Satoshi has true tabular figures, so every amount keeps `font-variant-numeric: tabular-nums`.
+- **Sentient** italic 400 (Fontshare) for one word only: "*Safely.*" in the hero. This is the single documented brand override of the "emphasis stays in the family" rule.
+- **JetBrains Mono** (variable 400 to 500, OFL) 12 to 13px for addresses, hashes, invoice IDs and risk scores.
+- Self-hosted woff2 in `web/public/fonts/`, `font-display: swap`, Satoshi 400 and 700 preloaded. No font CDN; the CSP is `font-src 'self'`.
+- **License.** Fontshare fonts use the ITF Free Font License (FFL): free for personal and commercial use, including self-hosting on our own site. It forbids redistributing the files from a repository or public file server, and forbids modifying or converting them. So we ship the official woff2 files unchanged, the Fontshare files are **gitignored**, and `npm run fonts` (`scripts/fetch-fonts.sh`) downloads them before every build. JetBrains Mono is OFL and is committed with `OFL-NOTICE.md`.
 
 ## Layout
 
@@ -64,7 +65,7 @@ Radius: cards 20px, panels 24px, the demo stage 28px. Shadows: card `0 4px 24px 
 | @e1genqq 2122435244028542995 ("UI/UX studio in 11 free repos": UI UX Pro Max, Penpot, shadcn/ui, Radix, Tailwind, Lucide, Motion, Magic UI, Storybook, axe-core, Playwright) | Lucide-style stroke icons, Radix-style accessible patterns (native `<dialog>`, `aria-current`, focus rings, progressbar roles), the serif-italic accent from the reel, and the pipeline "brief → design system → components → motion → test → ship". We test with **axe-core** (WCAG 2 A/AA, 0 violations on every route) and a headless browser flow test |
 | @BNBCHAIN 2123020505083199585, @Zorvh87 2123041742371140030 | Not design inspiration (a hackathon and a bug-bounty list). Not applied |
 
-All fonts are free Google Fonts and every icon is inline SVG or a Unicode glyph. No paid assets.
+All fonts are free (Fontshare FFL + OFL) and every icon is inline SVG. No paid assets.
 
 ## Guided journey and Web3 identity (ChatGPT flow spec, Nov 2026)
 
@@ -103,3 +104,46 @@ Jakub Krehel's make-interfaces-feel-better was a secondary reference for `text-w
 **Considered and kept:** Anthropic lists cream + terracotta as an AI default, but this palette is the brief's pinned "Quiet trust" spec, and the brief wins. The italic "Safely." accent is also from the spec. The 01/02/03 numbering stays because the steps are a real sequence.
 
 Verified with axe-core (WCAG 2 A/AA, 0 violations on every route, including setup, review and pay), the headless flow (demo, replay, wizard, inline errors, HOLD review, reduced motion), `npm run test:js` (15/15) and the unchanged contract suite (`forge test`, 32/32).
+
+## Native app shell (Nov 2026)
+
+Kindly is a PWA, not an APK: it installs to the home screen and opens full screen, but it is still the same web app.
+
+- **Phone (≤640px and installed):** a compact app bar (logo, the page title that appears once the large title scrolls away, an icon-only chain chip, the wallet pill) and a bottom tab bar: Home · Demo · Payments · Invoices · Settings. Freeze is one tap from Payments, from Settings → Safety, and from the sidebar on larger screens. Safe areas (`viewport-fit=cover`, `env(safe-area-inset-*)`), `interactive-widget=resizes-content`, tap highlight off, `overscroll-behavior` contain (none when installed), 16px inputs so iOS never zooms.
+- **Sheets:** on phones every dialog (wallet, trust, privacy, funds) is a bottom sheet with a grabber, drag-to-dismiss (a quarter of its height, or a flick), and a close button. Exit 200ms, faster than the 250ms entrance.
+- **Sticky primary CTAs** above the tab bar: Set up the agent, Run the demo, Approve / Reject, Pay.
+- **Lists:** tables stack into labelled rows; Settings is a grouped native-style list (Wallet, Network, Safety, App, About).
+- **Wallet on phones:** with no injected provider, Connect opens a sheet with **Open in MetaMask** (`https://link.metamask.io/dapp/<host>/…`), so the page reopens in MetaMask's browser, plus "Watch the recorded demo". Inside MetaMask the injected provider is used. Wrong network shows a banner with Switch network and a dot on the pill; disconnecting in the wallet returns the app to Connect.
+- **PWA:** `manifest.webmanifest` (standalone, portrait, cream theme), icons 192/512/maskable/apple-touch, Apple meta tags. `sw.js` precaches the shell, icons and fonts and serves hashed assets cache-first; navigation is network-first. It never caches RPC, explorer or wallet traffic (other origins are not intercepted), so chain state is always live. Offline shows "You're offline. Wallet and payment state may be outdated…". A dismissible install hint uses `beforeinstallprompt` on Android and Share → Add to Home Screen on iOS.
+- **Tablet (641 to 1023px):** an icon rail with labels under the icons. The rail toggle opens a full drawer with groups (Escape, a pick or a tap outside closes it).
+- **Desktop (≥1024px):** a 248px sidebar, a top bar with chain chip and wallet, and multi-column dashboards. Payments is allowance and safety + holds on the left, recent activity and your receipts in a sticky 380px column at ≥1280px.
+
+### Sidebar patterns from navbar.gallery (side-bar type)
+
+We looked at the side-bar examples (Aveon, Bud, Ayush Wanjari, Significa, Three Circles, Big Dirty Agency) for patterns only, no code or assets:
+
+- **Grouping with quiet labels** (Bud, Significa): Overview (Home, Demo) · Money (Payments, Invoices) · Account (Settings). Labels are sentence case, 12.5px muted, never ALL CAPS.
+- **Active state** (Ayush Wanjari): a filled white pill with a hairline border and the icon in coral, plus `aria-current="page"`.
+- **Account block pinned at the bottom** (Aveon, Bud): the wallet as a card (address in mono, balance and network), which opens the wallet panel.
+- **One prominent action** (Three Circles' colour block, Bud's primary button): **Freeze agent** in frost blue above the wallet block. It goes to Payments and focuses the real Freeze button; freezing still takes a tap and a wallet confirmation.
+- **Collapsible rail:** on desktop the toggle collapses the sidebar into a 92px icon rail (remembered in `localStorage`); on tablet the rail is the default and the toggle expands a drawer. `aria-expanded` / `aria-controls` on the toggle; labels stay in the accessibility tree and show as `title` tooltips.
+- **Keyboard:** skip link, visible focus rings, Up/Down/Home/End move between destinations, Escape closes the drawer.
+
+### What we took from the three skill repos (@jaimintf post), read as text only
+
+- **Appllama (main source):** the shell itself: tab bar of peers (switching tabs never slides; a push into a deeper page in the same tab does a 220ms slide), re-tapping the active tab scrolls to top, the large title that collapses into the app bar, grouped settings lists, sheets with grabbers, and press feedback by role (tab items dim to 55%, rows highlight, buttons scale to 0.97).
+- **Expo skills (transferable rules only):** 44px targets, 16px inputs, safe areas, keyboard-aware layout, disable the long-press callout on chrome, haptics as punctuation (`navigator.vibrate` on success and error, Android only, never the only feedback), and the "native slop" list we avoided: floating pill tab bar, everything in a card, X-only sheets, a grand entrance animation.
+- **Emil Kowalski's skills:** re-checked every animation: ease-out 150 to 250ms, exits faster than entrances, transform and opacity only, no animation on frequent actions (tab switches), a reduced-motion path for each.
+- **Honest gap:** no dark mode. Kindly is a single-theme brand ("Quiet trust").
+
+### Design resources from @iamtanzil_ (2108066324907962575), guidance only
+
+| Resource | What we took |
+|---|---|
+| AppShot Gallery | Finance app screenshots (Robinhood and other wallet apps): one hero number per screen, the balance first, plain rows under it, the primary action at the thumb |
+| Component Gallery | How mature systems build the pieces: toasts / snackbars (Wise, Material, Geist): one line, newest nearest the thumb, errors stay until dismissed and get a close button, success auto-dismisses after 4.5s and pauses on hover. Tabs, sidebars, steppers and empty states (one line of why + one action) checked against it |
+| Refero Styles | Typography and spacing check for the Satoshi + Sentient pairing: one family for UI and headings, a tight −0.02em on display sizes, 4/8px spacing rhythm |
+| MicroKit, Motion Primitives | Micro-interaction ideas rebuilt in plain CSS/JS, no dependencies: copy-hash confirmation (the copy icon swaps to a check that pops from 0.6 to 1 in 160ms, plus a screen-reader "Copied"), press feedback, toast exit 150ms |
+| Minimal Gallery | Restraint check: one accent, no decoration that doesn't carry state |
+
+Deliberately skipped: gradient buttons, liquid glass, CSS text effects, 3D icons, and flashy Aceternity / Magic UI effects (spotlights, beams, count-up numbers on money). They break the anti-slop rules and would make a payments app feel less trustworthy.

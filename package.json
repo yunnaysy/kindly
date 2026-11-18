@@ -15,7 +15,8 @@
     "e2e": "node scripts/e2e.mjs",
     "agent": "node agent/agent.mjs",
     "dev": "vite web",
-    "build:web": "vite build web",
+    "fonts": "bash scripts/fetch-fonts.sh web/public/fonts satoshi@400 satoshi@500 satoshi@700 sentient@400i",
+    "build:web": "npm run fonts && vite build web",
     "preview": "vite preview web"
   },
   "dependencies": {

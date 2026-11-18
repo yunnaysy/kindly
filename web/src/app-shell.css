@@ -1,0 +1,255 @@
+/* ==========================================================================
+   App shell: sidebar (desktop ≥1024), icon rail (tablet 641–1023), bottom tab bar (phone ≤640).
+   Same "Quiet trust" tokens as style.css. Motion: ease-out 150–250ms, no loops, no bounce.
+   ========================================================================== */
+:root { --side-w: 248px; --rail-w: 92px; --tab-h: 60px; --bar-h: 60px;
+  --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px); }
+html { -webkit-tap-highlight-color: transparent; }
+html, body { overflow-x: clip; }
+body { overscroll-behavior-y: contain; }
+.shell { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; }
+.main-col { min-width: 0; display: flex; flex-direction: column; }
+.main-col > main { width: 100%; max-width: 1200px; flex: 1; }
+.main-col > footer { width: calc(100% - 48px); max-width: 1152px; }
+.banner, .netwarn { width: calc(100% - 48px); }
+
+/* ---------- sidebar ---------- */
+.side { position: sticky; top: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 28px; padding: calc(22px + var(--sat)) 16px 22px calc(16px + var(--sal)); border-right: 1px solid var(--border); background: rgba(255,255,255,.45); }
+.side .brand { padding: 4px 10px; }
+#nav { display: grid; gap: 4px; margin: 0; }
+#nav a { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 10px 12px; border-radius: 12px; font-size: 14.5px; color: var(--muted); }
+#nav a svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+#nav a.active { color: var(--ink); background: var(--surface); box-shadow: var(--sh-card); border: 1px solid var(--border); padding: 9px 11px; }
+#nav a.active::after { display: none; }
+#nav a.active svg { color: var(--coral-ink); }
+#nav a { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+#nav a:active { opacity: .55; transition: opacity 100ms var(--ease); } /* bar items dim on press; they never scale */
+.side-foot { margin-top: auto; padding: 14px; border-radius: 16px; background: var(--canvas); border: 1px solid var(--border); font-size: 12.5px; color: var(--muted); }
+
+/* ---------- top app bar ---------- */
+.top { padding-top: var(--sat); }
+.top-inner { max-width: 1200px; padding: 12px 24px; gap: 16px; min-height: var(--bar-h); }
+.brand-m { display: none; }
+.appbar-title { font: 600 15px/1 var(--f-head); letter-spacing: -.01em; color: var(--muted); margin-right: auto; }
+.wallet { margin-left: auto; position: relative; }
+#connect svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.warnd { width: 8px; height: 8px; border-radius: 50%; background: #C9952B; box-shadow: 0 0 0 3px rgba(201,149,43,.2); }
+.netwarn { max-width: 1152px; margin: 10px auto 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--hold-soft); color: var(--hold); padding: 10px 12px 10px 16px; border-radius: 14px; font-size: 14px; font-weight: 500; }
+.icon-btn { width: 44px; height: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 999px; background: rgba(48,46,43,.05); color: var(--ink); cursor: pointer; flex: none; transition: background var(--t-fast) var(--ease), transform var(--t-press) var(--ease); }
+.icon-btn:hover { background: rgba(48,46,43,.09); } .icon-btn:active { transform: scale(.95); }
+.icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* ---------- desktop dashboard: overview | holds + receipts ---------- */
+.dash-grid { display: grid; gap: 24px; }
+.dash-main, .dash-side { display: grid; gap: 24px; align-content: start; min-width: 0; }
+@media (min-width: 1280px) {
+  .dash-grid { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
+  .dash-side { position: sticky; top: calc(var(--bar-h) + 20px); }
+  .dash-side .activity li { grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: start; }
+  .dash-side .activity li > .stamp, .dash-side .activity li > .r-ic { grid-row: span 3; }
+  .dash-side .activity .a-time, .dash-side .activity li > .hash, .dash-side .activity li > a { grid-column: 2; justify-self: start; }
+  .dash-side .activity li.empty { grid-template-columns: 1fr; }
+}
+.rlist .r-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--ok-soft); color: var(--ok); display: grid; place-items: center; }
+.rlist .r-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+
+/* ---------- settings: inset grouped lists ---------- */
+.settings-grid { display: grid; gap: 20px; align-items: start; }
+@media (min-width: 1024px) { .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.set-group { display: grid; gap: 8px; }
+.set-h { font: 600 13.5px/1.2 var(--f-ui); color: var(--muted); letter-spacing: 0; padding: 0 4px; }
+.set-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--sh-card); overflow: hidden; }
+.set-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; min-height: 60px; padding: 10px 14px 10px 16px; }
+.set-row + .set-row { border-top: 1px solid var(--border); }
+.set-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--canvas); border: 1px solid var(--border); color: var(--ink); display: grid; place-items: center; }
+.set-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.set-txt { display: grid; gap: 2px; min-width: 0; } .set-txt b { font-weight: 600; font-size: 14.5px; overflow-wrap: anywhere; } .set-txt small { color: var(--muted); font-size: 13px; }
+.set-go { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; color: var(--muted); }
+.set-go svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.install-box { display: grid; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--sh-card); }
+
+/* ---------- sheets (dialogs) ---------- */
+.grabber { display: none; }
+.sheet { width: min(480px, calc(100vw - 32px)); }
+
+/* ---------- install hint + offline screen ---------- */
+.install-hint { position: fixed; z-index: 45; left: 12px; right: 12px; bottom: calc(var(--tab-h) + var(--sab) + 12px); display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 8px 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--sh-lift); animation: hintIn var(--t-slow) var(--ease) both; }
+.install-hint b { display: block; font-size: 14px; } .install-hint small { color: var(--muted); font-size: 12.5px; }
+.install-hint .ih-ic { width: 36px; height: 36px; border-radius: 10px; background: var(--ink); color: var(--canvas); display: grid; place-items: center; }
+.install-hint .ih-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+@keyframes hintIn { from { opacity: 0; transform: translateY(8px); } }
+.offline { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: calc(24px + var(--sat)) 20px calc(24px + var(--sab)); background: var(--canvas); animation: viewIn var(--t-slow) var(--ease) both; }
+.offline-card { max-width: 420px; display: grid; gap: 14px; justify-items: start; }
+
+/* ---------- tablet: icon rail ---------- */
+@media (max-width: 1023px) {
+  .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+  .side { padding: calc(18px + var(--sat)) 10px 18px calc(10px + var(--sal)); align-items: center; gap: 22px; }
+  .side .brand-word, .side-foot { display: none; }
+  .side .brand { padding: 4px; }
+  #nav a { flex-direction: column; gap: 4px; padding: 10px 4px; width: 72px; font-size: 11.5px; font-weight: 600; text-align: center; }
+  #nav a.active { padding: 9px 3px; }
+  .appbar-title { color: var(--ink); font-size: 17px; }
+}
+
+/* ---------- phone: bottom tab bar, app bar, sheets ---------- */
+@media (max-width: 640px) {
+  .shell { display: block; }
+  .side { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; top: auto; height: auto; padding: 0 calc(6px + var(--sar)) var(--sab) calc(6px + var(--sal)); flex-direction: row; gap: 0; border-right: 0; border-top: 1px solid var(--border); background: rgba(248,246,241,.9); backdrop-filter: saturate(1.4) blur(16px); -webkit-backdrop-filter: saturate(1.4) blur(16px); }
+  .side .brand { display: none; }
+  #nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; order: 0; overflow: visible; gap: 0; }
+  #nav a { width: auto; min-height: var(--tab-h); justify-content: center; gap: 3px; padding: 8px 2px 6px; font-size: 11px; border-radius: 12px; background: none !important; box-shadow: none !important; border: 0 !important; }
+  #nav a svg { width: 23px; height: 23px; }
+  #nav a.active { color: var(--ink); } #nav a.active svg { color: var(--coral-ink); stroke-width: 2.1; }
+  .top-inner { flex-wrap: nowrap; padding: 8px 12px 8px 16px; gap: 10px; min-height: 56px; }
+  .brand-m { display: inline-flex; } .brand-m .brand-word { display: none; } .brand-m .mark { width: 32px; height: 32px; }
+  .appbar-title { font-size: 17px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .wallet { gap: 8px; }
+  .net { display: inline-flex; padding: 0; width: 36px; height: 36px; justify-content: center; } .net::before { display: none; }
+  .net .net-l { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .fund-grid, .fund-grid.three { grid-template-columns: 1fr; } .fund-grid > div + div { border-left: 0; border-top: 1px solid var(--border); }
+  #connect { padding: 9px 12px; }
+  .addr-pill .mono { font-size: 12px; }
+  .main-col > main { padding: 16px 16px calc(var(--tab-h) + var(--sab) + 28px); }
+  .main-col > footer { display: none; }
+  .banner, .netwarn { width: calc(100% - 24px); margin: 8px 12px 0; }
+  section.view { gap: 20px; }
+  h1 { font-size: 34px; } h1.title { font-size: 26px; }
+  .page-head .lead { font-size: 15.5px; }
+  .card { border-radius: 18px; }
+  .card:active, .set-row:active { transition-duration: var(--t-press); }
+  .set-row:has(a):active { background: rgba(48,46,43,.03); }
+
+  /* screen transition: direction follows the tab order */
+  /* tabs are peers: a tab switch just appears; only a push inside a tab slides in from the right */
+  [data-dir=tab] section.view, [data-dir=same] section.view { animation: none; }
+  [data-dir=push] section.view { animation: push 240ms var(--ease) both; }
+  .appbar-title { opacity: 0; transition: opacity 150ms var(--ease); } .appbar-title.shown { opacity: 1; }
+
+  /* sticky primary actions sit just above the tab bar */
+  .sticky-cta { position: sticky; z-index: 6; bottom: calc(var(--tab-h) + var(--sab) + 10px); padding: 8px; margin: 0; border-radius: 22px; background: rgba(248,246,241,.92); min-width: 0; width: 100%; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 -1px 0 var(--border), var(--sh-float); display: flex; gap: 10px; flex-wrap: nowrap; }
+  .sticky-cta > .btn, .sticky-cta > a.btn { flex: 1 1 0; min-width: 0; padding-left: 12px; padding-right: 12px; white-space: normal; line-height: 1.2; text-align: center; }
+  .runbar { min-width: 0; } .stage > * { min-width: 0; }
+  .sticky-cta.solo > .btn { width: 100%; }
+  .hero .cta.sticky-cta { margin-top: 24px; }
+
+  /* tables become stacked cards */
+  .table-wrap { overflow: visible; }
+  .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; }
+  .table-wrap thead { display: none; }
+  .table-wrap tr { border: 1px solid var(--border); border-radius: 16px; padding: 4px 14px; margin-bottom: 10px; background: var(--surface); }
+  .table-wrap td { border: 0; padding: 9px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: right; min-height: 44px; }
+  .table-wrap td + td { border-top: 1px solid var(--border); }
+  .table-wrap td[data-label]::before { content: attr(data-label); color: var(--muted); font-size: 12.5px; font-weight: 500; text-align: left; }
+  .table-wrap td:not([data-label]):empty, .table-wrap td[data-label=""]:empty { display: none; }
+
+  /* dialogs become bottom sheets */
+  .modal { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 90dvh; border-radius: 26px 26px 0 0; padding: 10px 18px calc(22px + var(--sab)); animation: sheetUp 250ms var(--ease) both !important; overscroll-behavior: contain; }
+  .modal .grabber, .wallet-pop .grabber { display: block; width: 38px; height: 5px; border-radius: 3px; background: var(--border-strong); margin: 2px auto 4px; }
+  .tgrid { grid-template-columns: 1fr; }
+  .wallet-pop { position: fixed; z-index: 55; left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 26px 26px 0 0; padding: 18px 18px calc(22px + var(--sab)); animation: sheetUp 250ms var(--ease) both; box-shadow: 0 -12px 40px rgba(48,46,43,.18); }
+
+  #toasts { left: 12px; right: 12px; width: auto; bottom: calc(var(--tab-h) + var(--sab) + 12px); }
+  .install-hint ~ #toasts { bottom: calc(var(--tab-h) + var(--sab) + 84px); }
+}
+@media (min-width: 641px) { .install-hint { display: none; } }
+@keyframes push { from { opacity: 0; transform: translateX(24px); } }
+@keyframes sheetUp { from { transform: translateY(24px); opacity: 0; } }
+
+/* installed app (standalone): no browser chrome, so respect the notch and home indicator everywhere */
+@media (display-mode: standalone) {
+  body { overscroll-behavior-y: none; }
+  .top { background: rgba(248,246,241,.92); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-dir] section.view, .modal, .wallet-pop, .install-hint { animation-duration: 1ms !important; }
+}
+
+/* hash-chip copy/explorer buttons: 26px visually, 44px hit area on touch screens */
+@media (pointer: coarse) { .hc-btn { position: relative; } .hc-btn::after { content: ""; position: absolute; inset: -9px; } }
+
+/* sheets: drag the grabber down to dismiss; the finger owns the vertical axis there */
+.grabber-zone { touch-action: none; cursor: grab; padding: 6px 0 2px; margin: -6px 0 0; }
+.modal.dragging, .wallet-pop.dragging { transition: none !important; animation: none !important; }
+.modal.settling, .wallet-pop.settling { transition: transform 250ms var(--ease) !important; }
+.modal.leaving, .wallet-pop.leaving { transition: transform 200ms var(--ease), opacity 200ms var(--ease) !important; }
+button, .chip, .set-row, .hc-btn { -webkit-touch-callout: none; }
+
+/* ---------- sidebar v2 (navbar.gallery patterns): groups, collapse to rail, wallet block + Freeze at the bottom ---------- */
+.side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.side-toggle { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease); }
+.side-toggle:hover { background: rgba(48,46,43,.06); color: var(--ink); }
+.side-toggle svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+@media (pointer: coarse) { .side-toggle { width: 44px; height: 44px; } }
+#nav { display: grid; gap: 2px; align-content: start; }
+.nav-group { margin: 14px 12px 4px; font: 500 12.5px/1.2 var(--f-ui); color: var(--muted); }
+.nav-group:first-child { margin-top: 0; }
+.nav-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.side-foot { display: grid; gap: 10px; padding: 0; background: none; border: 0; }
+.side-note { margin: 0; padding: 0 6px; font-size: 12px; color: var(--muted); }
+.side-freeze { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 10px 14px; border-radius: 14px; background: var(--frost-soft); color: var(--frost); font-weight: 600; font-size: 14px; text-decoration: none; border: 1px solid #CFDDE8; transition: background var(--t-fast) var(--ease), transform var(--t-press) var(--ease); }
+.side-freeze:hover { background: #D9E6EF; } .side-freeze:active { transform: scale(.97); }
+.side-freeze svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; flex: none; }
+.side-wallet { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; width: 100%; min-height: 56px; padding: 10px 12px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); box-shadow: var(--sh-card); text-align: left; cursor: pointer; font: inherit; color: var(--ink); transition: border-color var(--t-fast) var(--ease); }
+.side-wallet:hover { border-color: var(--border-strong); }
+.side-wallet .sw-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--ink); color: var(--canvas); display: grid; place-items: center; }
+.side-wallet .sw-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.sw-txt { display: grid; min-width: 0; } .sw-txt b { font: 600 13.5px var(--f-ui); } .sw-txt b.mono { font-family: var(--f-mono); letter-spacing: -.01em; } .sw-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .sw-txt small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell { transition: grid-template-columns var(--t) var(--ease); }
+
+/* rail: tablet by default, desktop when collapsed. Labels stay in the accessibility tree; tooltips via title. */
+@media (min-width: 1024px) {
+  .side-collapsed .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+}
+@media (min-width: 1024px) {
+  .side-collapsed .side { padding-left: 10px; padding-right: 10px; align-items: center; }
+  .side-collapsed .side-head { flex-direction: column; }
+  .side-collapsed .brand-word, .side-collapsed .nav-group, .side-collapsed .side-note, .side-collapsed .side-freeze span, .side-collapsed .sw-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .side-collapsed #nav a { width: 48px; height: 48px; padding: 0; justify-content: center; }
+  .side-collapsed #nav a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .side-collapsed .side-freeze, .side-collapsed .side-wallet { width: 48px; height: 48px; padding: 0; display: grid; place-items: center; grid-template-columns: 1fr; }
+  .side-collapsed .nav-list + .nav-group { margin: 0; } .side-collapsed .nav-list { gap: 4px; } .side-collapsed #nav { gap: 10px; }
+}
+@media (min-width: 641px) and (max-width: 1023px) {
+  .side-head { flex-direction: column; }
+  .nav-group, .side-note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .side-foot { display: grid; justify-items: center; }
+  .side-freeze span, .sw-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .side-freeze, .side-wallet { width: 48px; height: 48px; padding: 0; display: grid; place-items: center; grid-template-columns: 1fr; }
+  #nav { gap: 8px; }
+  /* expanded rail: an overlay drawer with full labels; Escape or a pick closes it */
+  .side-open .side { position: fixed; z-index: 50; width: 264px; left: 0; top: 0; bottom: 0; align-items: stretch; box-shadow: var(--sh-lift); background: var(--canvas); animation: drawerIn 220ms var(--ease) both; }
+  .side-open .side-head { flex-direction: row; } .side-open .brand-word { display: inline; }
+  .side-open .nav-group, .side-open .side-note, .side-open .side-freeze span, .side-open .sw-txt { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+  .side-open #nav a { flex-direction: row; width: auto; font-size: 14.5px; font-weight: 500; text-align: left; gap: 12px; padding: 10px 12px; }
+  .side-open .side-freeze, .side-open .side-wallet { width: 100%; height: auto; display: flex; padding: 10px 14px; place-items: initial; }
+  .side-open .side-wallet { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .side-open .side-foot { justify-items: stretch; }
+  .side-open .main-col { grid-column: 2; }
+  .side-open .main-col::before { content: ""; position: fixed; inset: 0; z-index: 45; background: rgba(48,46,43,.32); }
+}
+@keyframes drawerIn { from { transform: translateX(-16px); opacity: 0; } }
+
+/* phone: the sidebar is the bottom tab bar; groups and the account block live in Settings */
+@media (max-width: 640px) {
+  .side-head, .nav-group, .side-foot { display: none !important; }
+  #nav { display: flex; }
+  .nav-list { display: contents; } .nav-list li { display: contents; }
+  #nav a { flex: 1 1 0; }
+}
+@media (prefers-reduced-motion: reduce) { .shell { transition: none; } .side-open .side { animation: none; } }
+
+/* ---------- micro-interactions (MicroKit / Motion Primitives ideas, rebuilt in CSS within Emil's rules) ---------- */
+.toast-msg { flex: 1; min-width: 0; }
+.toast-x { flex: none; margin: -8px -10px -8px 0; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: inherit; cursor: pointer; opacity: .75; }
+.toast-x:hover { opacity: 1; background: rgba(255,255,255,.08); } .toast-x svg { width: 16px; height: 16px; }
+@media (pointer: coarse) { .toast-x { width: 44px; height: 44px; } }
+.toast.leaving { animation: toastOut 150ms var(--ease) both; }
+@keyframes toastOut { to { transform: translateY(4px); opacity: 0; } }
+/* copy confirmation: the check pops in once (scale .6 → 1, 160ms), no bounce */
+.hc-btn.done svg { animation: tickIn 160ms var(--ease) both; }
+@keyframes tickIn { from { transform: scale(.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .toast.leaving, .hc-btn.done svg { animation: none; } }
+/* Satoshi sets wider figures than Inter: long balances wrap their token label instead of spilling out of the dark card */
+.wc-amt { flex-wrap: wrap; row-gap: 6px; min-width: 0; } .walletcard { min-width: 0; }
+.dash-side .wc-amt { font-size: clamp(30px, 2.6vw, 38px); }

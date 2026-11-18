@@ -12,3 +12,7 @@ agent/state.json
 contracts/lib/
 DEPLOYER_ADDRESS.txt
 agent/agent.config.json
+
+# Fontshare (ITF FFL) font files: self-hosted on the site, never redistributed via the repo. Fetch with npm run fonts.
+web/public/fonts/satoshi-*.woff2
+web/public/fonts/sentient-*.woff2

@@ -8,11 +8,13 @@ The gate is a set of **fixed, deterministic contract rules**, not an AI model. T
 
 **Live app:** [https://kindly-lemon.vercel.app](https://kindly-lemon.vercel.app) · no sign-up, no email, no password: just a wallet, or no wallet at all for the demo.
 
-| | |
-|---|---|
-| ![Home: greeting, allowance card with the 3D shield, colour carousel](docs/screenshots/v3-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v3-mobile-review-confirm.png) |
+| Welcome | Home | Review | Desktop |
+|---|---|---|---|
+| ![Welcome: floating 3D objects, big title, black pill Connect](docs/screenshots/v3-mobile-welcome.png) | ![Home: greeting, allowance card with the 3D shield, colour carousel](docs/screenshots/v3-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v3-mobile-review-confirm.png) | ![Desktop welcome](docs/screenshots/v3-desktop-welcome.png) |
 
-**Demo video:** [docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:10, English voiceover (edge-tts neural voice) and burned-in captions, recorded from the redesigned live site; the Home, review and Activity scenes come from a labelled local rehearsal because the live site has no connected wallet).
+**Demo video (2:10):** [![Kindly demo video poster: click to play](docs/video/kindly-demo-poster.png)](docs/video/kindly-demo.mp4)
+
+[docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:10, English voiceover (edge-tts neural voice) and burned-in captions, recorded from the redesigned live site; the Home, review and Activity scenes come from a labelled local rehearsal because the live site has no connected wallet).
 
 Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md) · Pitch: [docs/PITCH.md](docs/PITCH.md)
 
@@ -185,7 +187,12 @@ Final mandate state: spent 0.02499 of 0.5 tUSD8, cap lowered to 0.1, revoked. Re
 
 ## Screenshots
 
-White-first redesign (Nov 2026): a cat + shield mark, four tabs (Home · Activity · Wallet · Settings), technical details behind "Details", and a deliberate confirmation step before you sign an approval.
+**v3 design (Nov 2026):**
+- **Look:** a big two-line greeting and bold colour cards (violet allowance, orange spent, butter max per payment, sky needs-you), each with a glossy 3D object. There is also a Shortcuts bento, pill filter chips, and a floating dark pill bottom nav.
+- **Onboarding:** floating 3D objects (cat, shield, coins, wallet, lock) and a black pill **Connect wallet · Try live**.
+- **Structure:** four tabs (Home · Activity · Wallet · Settings), technical details behind "Details", and a deliberate confirmation step before you sign an approval.
+- **Accessibility:** axe-core reports 0 WCAG A/AA violations on the live site at 390, 820 and 1440 px.
+- **Design notes:** see [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md). The 3D objects are generated renders made for this project ([docs/brand/3d](docs/brand/3d/README.md)).
 
 | | |
 |---|---|

@@ -306,7 +306,7 @@ const checkItem = (label) => h("li", {}, h("span", { class: "tick" }, svg('<path
 // ------------------------------------------------------------------ Trust: custody, protections, privacy (claims verified against contracts/src)
 function trustModal(tab = "funds") {
   document.getElementById("trust")?.remove();
-  const card = (n, t, body) => h("div", { class: "tcard" }, h("span", { class: "num" }, n), h("h3", {}, t), h("p", {}, body));
+  const card = (n, t, body) => h("div", { class: "tcard" }, h("span", { class: "num" }, n), h("h2", { class: "h3" }, t), h("p", {}, body));
   const close = h("button", { class: "btn ghost small" }, "Close");
   const dlg = h("dialog", { id: "trust", class: "modal", "aria-labelledby": "trust-title" },
     h("div", { class: "row between" }, h("div", { class: "stack", style: "gap:4px" }, h("span", { class: "eyebrow" }, "Security and funds"), h("h2", { id: "trust-title" }, tab === "privacy" ? "What's visible on-chain" : "How your funds are protected")), close),
@@ -366,7 +366,7 @@ function viewHome() {
         ? h("div", { class: "contracts" }, h("span", {}, "Kindly ", addrLink(D.kindly)), h("span", {}, "Payee registry ", addrLink(D.registry)), h("span", { class: "row", style: "gap:6px" }, tok(), addrLink(D.token)))
         : h("p", { class: "warn" }, `Contracts not deployed on ${CHAIN.name} yet.`)));
 }
-const step3 = (n, t, body) => h("div", {}, h("span", { class: "num" }, n), h("h3", {}, t), h("p", {}, body));
+const step3 = (n, t, body) => h("div", {}, h("span", { class: "num" }, n), h("h2", { class: "h3" }, t), h("p", {}, body));
 
 /** The floating payment card on the home page cycles PAY → HOLD → REJECT (static PAY with reduced motion). */
 function heroCard() {
@@ -602,7 +602,7 @@ function recordedRunCard() {
   const run = recordedRuns[CHAIN.id];
   if (!run?.decisions?.length) return h("div", {});
   return h("div", { class: "card" },
-    h("div", { class: "row between" }, h("h3", {}, `Last recorded run on ${CHAIN.id === 44005 ? "Aevum" : CHAIN.name}`), h("span", { class: "mono muted" }, new Date(run.finishedAt).toLocaleString())),
+    h("div", { class: "row between" }, h("h2", { class: "h3" }, `Last recorded run on ${CHAIN.id === 44005 ? "Aevum" : CHAIN.name}`), h("span", { class: "mono muted" }, new Date(run.finishedAt).toLocaleString())),
     h("p", { class: "muted small" }, "Recorded by scripts/e2e.mjs. Every decision is a real SafetyDecision event. Click through to the explorer."),
     h("div", { class: "grid2" }, run.decisions.map((d) => decisionCard({ decision: d.decision, reason: d.reason, risk: d.risk, text: d.explanation }, [h("span", {}, d.invoice), txLink(d.hash)]))));
 }
@@ -1151,9 +1151,9 @@ async function viewMerchant() {
   const name = sanitizeText(payee.name || "", 64);
   root.append(h("div", { class: "card panel" },
     payee.active
-      ? h("div", { class: "row between" }, h("div", { class: "merchant-head" }, h("span", { class: "avatar" }, (name[0] || "?").toUpperCase()), h("div", { class: "stack", style: "gap:2px" }, h("h3", {}, name), h("span", { class: "small muted" }, addrLink(state.account)))),
+      ? h("div", { class: "row between" }, h("div", { class: "merchant-head" }, h("span", { class: "avatar" }, (name[0] || "?").toUpperCase()), h("div", { class: "stack", style: "gap:2px" }, h("h2", { class: "h3" }, name), h("span", { class: "small muted" }, addrLink(state.account)))),
           verified ? statusChip("verified", "Verified merchant") : statusChip("pending", "Awaiting verification"))
-      : h("h3", {}, "Register your business"),
+      : h("h2", { class: "h3" }, "Register your business"),
     payee.active ? h("details", {}, h("summary", {}, "Edit profile"), h("div", { class: "body" }, profileForm)) : profileForm));
   if (!payee.active) return root;
 
@@ -1186,13 +1186,13 @@ async function viewMerchant() {
     loadList();
   };
   root.append(h("div", { class: "split" },
-    h("div", { class: "card panel" }, h("h3", {}, "Create invoice"),
+    h("div", { class: "card panel" }, h("h2", { class: "h3" }, "Create invoice"),
       h("label", { class: "amount-label" }, "Amount", h("div", { class: "amount-field" }, amt, tok())),
       h("label", {}, "What is this for?", memo, h("span", { class: "hint" }, "Public on-chain. Keep names, emails, phones and addresses out. ", trustLink("What's visible?", "privacy"))), h("label", {}, "Invoice number", num),
       h("details", {}, h("summary", {}, "More options"), h("div", { class: "body grid2" }, h("label", {}, "Bill to (optional)", payer), h("label", {}, "Expires in (hours)", hours))),
       createBtn),
     out));
-  const list = h("div", { class: "card" }, h("h3", {}, "My invoices"), skeleton());
+  const list = h("div", { class: "card" }, h("h2", { class: "h3" }, "My invoices"), skeleton());
   root.append(list);
   async function loadList() {
     const logs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoiceCreated", args: { merchant: state.account }, fromBlock: fromBlock() });
@@ -1222,7 +1222,7 @@ async function viewMerchant() {
       rows.push(h("tr", {}, h("td", {}, hashChip(lg.args.id, "invoice")), h("td", { class: "memo-cell" }, sanitizeText(lg.args.memo, 60) || h("span", { class: "muted" }, "No memo")), h("td", { class: "num" }, fmt(inv.amount)),
         h("td", {}, h("span", { class: `chip s-${st}` }, st), " ", inv.mandateId > 0n ? h("span", { class: "chip lav" }, `assistant #${inv.mandateId}`) : ""), h("td", {}, actions)));
     }
-    list.replaceChildren(h("h3", {}, "My invoices"), rows.length ? h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, h("tr", {}, ["ID", "Memo", "tUSD8", "Status", ""].map((t, i) => h("th", { class: i === 2 ? "num" : "" }, t)))), h("tbody", {}, rows))) : h("p", { class: "muted" }, "No invoices yet. Create one above and share the link or QR code."));
+    list.replaceChildren(h("h2", { class: "h3" }, "My invoices"), rows.length ? h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, h("tr", {}, ["ID", "Memo", "tUSD8", "Status", ""].map((t, i) => h("th", { class: i === 2 ? "num" : "" }, t)))), h("tbody", {}, rows))) : h("p", { class: "muted" }, "No invoices yet. Create one above and share the link or QR code."));
   }
   loadList().catch((e) => list.replaceChildren(h("p", { class: "warn" }, humanError(e))));
   return root;
@@ -1317,14 +1317,14 @@ async function viewActivity() {
       out.replaceChildren(h("div", { class: "card receipt-wrap" }, receiptCard({ amount: inv.amount, merchantName: payee.name, merchant: inv.merchant, memo: created[0]?.args?.memo, invoiceId: null, hash: paid[0]?.transactionHash, receipt: inv.receipt, mandateId: inv.mandateId, decision: last ? DECISION[last.decision] : null, approved: last && DECISION[last.decision] === "HOLD", risk: last?.risk, paidBy: inv.paidBy })));
     } catch (e) { out.replaceChildren(h("p", { class: "warn" }, e.message?.startsWith("Invoice ID") ? e.message : humanError(e))); }
   };
-  root.append(h("div", { class: "card panel" }, h("h3", {}, "Verify a receipt"), h("div", { class: "row", style: "align-items:end" }, h("label", { style: "flex:1;min-width:240px" }, "Invoice ID", idIn), vbtn), out));
-  const feed = h("div", { class: "card" }, h("h3", {}, "Latest settlements"), skeleton());
+  root.append(h("div", { class: "card panel" }, h("h2", { class: "h3" }, "Verify a receipt"), h("div", { class: "row", style: "align-items:end" }, h("label", { style: "flex:1;min-width:240px" }, "Invoice ID", idIn), vbtn), out));
+  const feed = h("div", { class: "card" }, h("h2", { class: "h3" }, "Latest settlements"), skeleton());
   root.append(feed);
   if (D.kindly) {
     const logs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoicePaid", fromBlock: fromBlock() }).catch(() => []);
     const rows = logs.reverse().slice(0, 30).map((lg) => h("tr", {}, h("td", {}, txLink(lg.transactionHash)), h("td", { class: "num" }, fmt(lg.args.amount)), h("td", {}, addrLink(lg.args.merchant)),
       h("td", {}, lg.args.mandateId > 0n ? h("span", { class: "chip lav" }, `assistant #${lg.args.mandateId}`) : h("span", { class: "chip" }, "direct")), h("td", {}, hashChip(lg.args.receipt, "receipt"))));
-    feed.replaceChildren(h("h3", {}, "Latest settlements"), rows.length ? h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, h("tr", {}, ["Transaction", "tUSD8", "Merchant", "Path", "Receipt"].map((t, i) => h("th", { class: i === 1 ? "num" : "" }, t)))), h("tbody", {}, rows))) : h("p", { class: "muted" }, "No payments yet. Receipts appear here as soon as an invoice is paid."));
+    feed.replaceChildren(h("h2", { class: "h3" }, "Latest settlements"), rows.length ? h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, h("tr", {}, ["Transaction", "tUSD8", "Merchant", "Path", "Receipt"].map((t, i) => h("th", { class: i === 1 ? "num" : "" }, t)))), h("tbody", {}, rows))) : h("p", { class: "muted" }, "No payments yet. Receipts appear here as soon as an invoice is paid."));
   }
   return root;
 }

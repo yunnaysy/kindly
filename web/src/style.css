@@ -254,7 +254,7 @@ details > .body { margin-top: 14px; animation: viewIn var(--t) var(--ease) both;
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .merchant-head { display: flex; gap: 14px; align-items: center; }
 .merchant-head .avatar { width: 52px; height: 52px; border-radius: 16px; font-size: 22px; }
-.merchant-head h3 { font-size: 20px; }
+.merchant-head h2 { font-size: 20px; }
 .share { display: grid; gap: 16px; justify-items: center; text-align: center; padding: 22px; border-radius: var(--r-panel); background: var(--canvas); border: 1px solid var(--border); animation: viewIn var(--t-slow) var(--ease) both; }
 .share img { border-radius: 18px; background: #fff; padding: 12px; box-shadow: var(--sh-card); animation: qrIn 320ms var(--ease) both; }
 @keyframes qrIn { from { transform: scale(.98); opacity: 0; } }

@@ -253,3 +253,27 @@ button, .chip, .set-row, .hc-btn { -webkit-touch-callout: none; }
 /* Satoshi sets wider figures than Inter: long balances wrap their token label instead of spilling out of the dark card */
 .wc-amt { flex-wrap: wrap; row-gap: 6px; min-width: 0; } .walletcard { min-width: 0; }
 .dash-side .wc-amt { font-size: clamp(30px, 2.6vw, 38px); }
+
+/* ---------- light iOS fintech language (ChatGPT direction, Nov 2026): white cards, circular icons, small status pills ---------- */
+.card { border-color: transparent; }
+.set-list { border-color: transparent; box-shadow: var(--sh-card); border-radius: var(--r-panel); }
+.set-ic, .rlist .r-ic, .gate-mark, .es-icon, .tile-ic { border-radius: 50%; }
+.set-ic { border: 0; background: var(--canvas); }
+.spill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font: 600 12px/1.2 var(--f-ui); background: var(--canvas); color: var(--muted); white-space: nowrap; flex: none; }
+.spill.ok { background: var(--ok-soft); color: var(--ok); } .spill.ok::before, .spill.warn::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.spill.warn { background: var(--hold-soft); color: var(--hold); }
+.fox { width: 20px; height: 20px; display: block; flex: none; }
+.fox-av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--canvas); }
+.side-wallet .sw-ic { background: var(--canvas); border-radius: 50%; }
+.btn.mm { background: var(--surface); color: var(--ink); border: 1px solid var(--border-strong); gap: 10px; }
+.btn.mm:hover { border-color: var(--ink); box-shadow: none; transform: none; }
+.set-row.danger { display: block; padding: 0; }
+.set-btn { width: 100%; min-height: 56px; display: flex; gap: 10px; align-items: center; justify-content: center; border: 0; background: none; color: var(--bad); font: 600 15px var(--f-ui); cursor: pointer; border-radius: var(--r-panel); }
+.set-btn:hover { background: var(--bad-soft); } .set-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; text-decoration: none; padding: 18px 20px; }
+.tile:hover { transform: translateY(-1px); box-shadow: var(--sh-float); }
+.tile-ic { width: 44px; height: 44px; display: grid; place-items: center; background: var(--coral-soft); color: var(--coral-ink); }
+.tile-ic svg, .tile-go svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tile-txt { display: grid; gap: 2px; } .tile-txt b { font-weight: 600; } .tile-txt small { color: var(--muted); font-size: 13px; }
+.tile-go { color: var(--muted); }
+#nav svg, .side-freeze svg, .side-toggle svg { stroke-width: 1.9; }

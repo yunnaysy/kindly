@@ -89,27 +89,34 @@ const riskView = (risk) => h("span", { class: "risk", title: "Risk score from th
 const VERDICT = { PAY: "PAY", HOLD: "HOLD", REJECT: "REJECT" };
 /** One label per outcome, used everywhere: demo, dashboard, review screen and receipts. */
 const OUTCOME = { PAY: "Automatic", HOLD: "Needs you", REJECT: "Blocked" };
-// One outline icon set: 24px grid, 1.75 stroke, currentColor. No emoji glyphs.
+// One outline icon family: Lucide (ISC), inlined, currentColor. Kindly's own marks (gate, token, Aevum) stay custom; the MetaMask fox is the official file. No emoji glyphs.
 const ICON = {
-  check: () => svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
-  pause: () => svg('<path d="M9 6v12M15 6v12"/>'),
-  cross: () => svg('<path d="M7 7l10 10M17 7L7 17"/>'),
-  shield: () => svg('<path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/>'),
+  activity: () => svg('<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>'),
+  lock: () => svg('<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/> <path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+  bell: () => svg('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/> <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'),
+  help: () => svg('<circle cx="12" cy="12" r="10"/> <path d="m4.93 4.93 4.24 4.24"/> <path d="m14.83 9.17 4.24-4.24"/> <path d="m14.83 14.83 4.24 4.24"/> <path d="m9.17 14.83-4.24 4.24"/> <circle cx="12" cy="12" r="4"/>'),
+  logout: () => svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/> <polyline points="16 17 21 12 16 7"/> <line x1="21" x2="9" y1="12" y2="12"/>'),
+  chev: () => svg('<path d="m9 18 6-6-6-6"/>'),
+  file: () => svg('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/> <path d="M14 2v4a2 2 0 0 0 2 2h4"/> <path d="M10 9H8"/> <path d="M16 13H8"/> <path d="M16 17H8"/>'),
+  check: () => svg('<path d="M20 6 9 17l-5-5"/>'),
+  pause: () => svg('<rect x="14" y="4" width="4" height="16" rx="1"/> <rect x="6" y="4" width="4" height="16" rx="1"/>'),
+  cross: () => svg('<path d="M18 6 6 18"/> <path d="m6 6 12 12"/>'),
+  shield: () => svg('<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/> <path d="m9 12 2 2 4-4"/>'),
   // Kindly's Safety Gate glyph: a shield holding three connected nodes (agent, rules, merchant).
   gate: () => svg('<path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/>'),
-  wallet: () => svg('<path d="M5 7.5V7a2 2 0 0 1 2-2h10"/><rect x="4" y="7.5" width="16" height="11.5" rx="2.5"/><path d="M15.5 13.25h1.5"/>'),
-  copy: () => svg('<rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/>'),
-  ext: () => svg('<path d="M14 5h5v5M19 5l-8 8"/><path d="M17 13.5V18a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4.5"/>'),
-  snow: () => svg('<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/>'),
-  play: () => svg('<path d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.2 5.1A.8.8 0 0 0 8 5.8z"/>'),
-  spark: () => svg('<path d="M12 4.5l1.6 4.4 4.4 1.6-4.4 1.6L12 16.5l-1.6-4.4L6 10.5l4.4-1.6z"/>'),
+  wallet: () => svg('<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>'),
+  copy: () => svg('<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>'),
+  ext: () => svg('<path d="M15 3h6v6"/> <path d="M10 14 21 3"/> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'),
+  snow: () => svg('<line x1="2" x2="22" y1="12" y2="12"/> <line x1="12" x2="12" y1="2" y2="22"/> <path d="m20 16-4-4 4-4"/> <path d="m4 8 4 4-4 4"/> <path d="m16 4-4 4-4-4"/> <path d="m8 20 4-4 4 4"/>'),
+  play: () => svg('<polygon points="6 3 20 12 6 21 6 3"/>'),
+  spark: () => svg('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/> <path d="M20 3v4"/> <path d="M22 5h-4"/> <path d="M4 17v2"/> <path d="M5 18H3"/>'),
   aevum: () => svg('<path d="M12 3.5l7.5 8.5-7.5 8.5L4.5 12z"/><path d="M12 8.5l3.2 3.5-3.2 3.5L8.8 12z"/>'),
-  arrow: () => svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
-  home: () => svg('<path d="M4.5 11L12 4.5l7.5 6.5"/><path d="M6.5 9.5V19h11V9.5"/>'),
-  receipt: () => svg('<path d="M6.5 3.5h11v17l-2.75-1.6-2.75 1.6-2.75-1.6-2.75 1.6z"/><path d="M9.5 8.5h5M9.5 12h5"/>'),
-  gear: () => svg('<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/>'),
-  phone: () => svg('<rect x="7" y="3.5" width="10" height="17" rx="2.5"/><path d="M11 17.5h2"/>'),
-  close: () => svg('<path d="M7 7l10 10M17 7L7 17"/>'),
+  arrow: () => svg('<path d="M5 12h14"/> <path d="m12 5 7 7-7 7"/>'),
+  home: () => svg('<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+  receipt: () => svg('<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/> <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/> <path d="M12 17.5v-11"/>'),
+  gear: () => svg('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/> <circle cx="12" cy="12" r="3"/>'),
+  phone: () => svg('<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/>'),
+  close: () => svg('<path d="M18 6 6 18"/> <path d="m6 6 12 12"/>'),
 };
 /** tUSD8 token badge: a custom mark (a coin with two level bars, "stable"), used on every balance and amount. */
 const tok = () => h("span", { class: "tok", translate: "no" }, svg('<circle cx="12" cy="12" r="8.5"/><path d="M8.6 10.3h6.8M8.6 13.7h6.8"/>'), "tUSD8");
@@ -151,6 +158,8 @@ function disconnectLocal() {
   toast("Wallet disconnected. You can still watch the recorded demo.");
   route();
 }
+/** The official MetaMask fox (brand pack from metamask.io/assets), shown unmodified next to the MetaMask name. */
+const fox = (size = 20) => h("img", { class: "fox", src: "./brand/metamask-fox.svg", alt: "", width: size, height: size });
 /** Deep link that opens this exact page inside the MetaMask mobile browser. */
 const metamaskLink = () => `https://link.metamask.io/dapp/${location.host}${location.pathname}${location.search}${location.hash}`;
 /** No injected wallet: on phones, offer "Open in MetaMask"; on desktop, explain the extension. Either way the replay stays one tap away. */
@@ -160,7 +169,7 @@ function noWalletSheet() {
     h("p", { class: "muted" }, mobile
       ? "Phone browsers can't talk to a wallet directly. Open Kindly inside the MetaMask app's browser and connect from there. Your keys never leave MetaMask."
       : "Kindly connects to a browser wallet such as the MetaMask extension. Install it, reload this page, then connect."),
-    mobile ? h("a", { class: "btn dark big wide", href: metamaskLink(), rel: "noopener" }, ICON.wallet(), "Open in MetaMask") : h("a", { class: "btn dark big wide", href: "https://metamask.io/download/", target: "_blank", rel: "noopener" }, ICON.wallet(), "Get MetaMask"),
+    mobile ? h("a", { class: "btn mm big wide", href: metamaskLink(), rel: "noopener" }, fox(22), "Open in MetaMask") : h("a", { class: "btn mm big wide", href: "https://metamask.io/download/", target: "_blank", rel: "noopener" }, fox(22), "Get MetaMask"),
     mobile ? h("ol", { class: "plain small" }, h("li", {}, "MetaMask opens this page in its own browser."), h("li", {}, "Tap Connect and pick an account."), h("li", {}, "Switch to QDay Aevum Testnet when asked.")) : null,
     h("hr", { class: "sep" }),
     h("p", { class: "small muted" }, "Just looking? The recorded demo replays a real testnet run and needs no wallet."),
@@ -238,7 +247,7 @@ function toggleWalletPanel() {
     h("div", { class: "wp-bal" }, money(state.balance ?? 0n, "big")),
     h("dl", { class: "kv" }, h("dt", {}, "Network"), h("dd", {}, aevumChip(CHAIN.id === 44005 ? "Aevum testnet" : CHAIN.name)), h("dt", {}, "Address"), h("dd", {}, addrLink(state.account))),
     h("p", { class: "small muted" }, "Kindly never holds your funds. Payments move straight from this wallet to the merchant."),
-    h("a", { class: "btn dark small wide", href: "#/controls", onclick: () => close() }, "Open dashboard"));
+    h("a", { class: "btn dark small wide", href: "#/", onclick: () => close() }, "Open Home"));
   const gz = h("div", {}, h("div", { class: "grabber", "aria-hidden": "true" })); pop.prepend(gz); dragToDismiss(pop, gz, () => { close(); btn.focus(); });
   btn.after(pop); btn.setAttribute("aria-expanded", "true");
   setTimeout(() => { document.addEventListener("keydown", onKey); document.addEventListener("pointerdown", onOut); pop.querySelector("button, a")?.focus(); }, 0);
@@ -623,12 +632,14 @@ const connectCard = (what) => h("div", { class: "card panel empty-state" },
   h("div", { class: "row" }, h("button", { class: "btn dark", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, ICON.wallet(), "Connect wallet"), h("a", { class: "btn ghost", href: "#/demo?replay=1" }, "Watch the recorded demo")));
 
 // ------------------------------------------------------------------ Dashboard ("Your AI agent")
-async function viewControl() {
-  setTitle("Dashboard");
+/** Home (mode "home"): what needs you, your agent with Freeze, recent activity. Wallet (mode "wallet"): balance, allowance, every mandate and its settings. */
+async function viewControl(mode = "home") {
+  const wallet = mode === "wallet";
+  setTitle(wallet ? "Wallet" : "Home");
   const root = h("section", { class: "view" });
-  if (!state.account) { root.append(pageHead("Your AI agent", "Agent dashboard", "What your AI assistant may pay, how much, and to whom."), connectCard("see and manage your assistant's permissions")); return root; }
+  if (!state.account) { root.append(pageHead(null, wallet ? "Wallet" : "Your AI agent", wallet ? "Your balance, the bounded allowance and every mandate." : "What your AI assistant may pay, how much, and to whom."), connectCard(wallet ? "see your balance and allowance" : "see and manage your assistant's permissions")); return root; }
   requireWallet();
-  const head = h("div", {}, pageHead("Your AI agent", "Everything under control.", null));
+  const head = h("div", {}, pageHead(wallet ? null : "Your AI agent", wallet ? "Wallet" : "Everything under control.", wallet ? "Your funds stay in your wallet. Kindly may only move the bounded allowance below." : null));
   const top = h("div", { class: "dash-top" }, h("div", { class: "card panel" }, skeleton()), h("div", { class: "walletcard" }, skeleton()));
   const holds = h("div", {});
   const list = h("div", { class: "stack", style: "gap:16px" });
@@ -637,14 +648,19 @@ async function viewControl() {
   const funds = h("div", { class: "card panel funds" }, skeleton());
   const receipts = h("ul", { class: "activity rlist" }, h("li", {}, skeleton()));
   // Desktop: overview (agent + allowance) | holds and receipts. Tablet and phone: one column, holds first.
-  root.append(head, h("div", { class: "dash-grid" },
-    h("div", { class: "dash-main" }, holds, top, funds,
-      h("div", { class: "row between" }, h("h2", { class: "h3" }, "Mandates"), h("a", { class: "btn ghost small", href: "#/start" }, "Add a mandate")),
-      list),
-    h("div", { class: "dash-side" },
-      h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Recent activity"), h("span", { class: "muted small" }, "Safety Gate decisions")), recent,
-        h("details", {}, h("summary", {}, "All activity"), h("div", { class: "body" }, more))),
-      h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Your receipts"), h("a", { class: "small", href: "#/activity" }, "All receipts")), receipts))));
+  const demoTile = h("a", { class: "card tile", href: "#/demo" }, h("span", { class: "tile-ic", "aria-hidden": "true" }, ICON.play()), h("span", { class: "tile-txt" }, h("b", {}, "See the Safety Gate in action"), h("small", {}, "Live demo or the recorded run, no wallet needed")), h("span", { class: "tile-go", "aria-hidden": "true" }, ICON.chev()));
+  const recentCard = h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Recent activity"), h("a", { class: "small", href: "#/activity" }, "See all")), recent,
+    h("details", {}, h("summary", {}, "Older decisions"), h("div", { class: "body" }, more)));
+  const receiptsCard = h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Your receipts"), h("a", { class: "small", href: "#/activity" }, "All receipts")), receipts);
+  root.append(head, wallet
+    ? h("div", { class: "dash-grid" },
+        h("div", { class: "dash-main" }, top, funds,
+          h("div", { class: "row between" }, h("h2", { class: "h3" }, "Mandates"), h("a", { class: "btn ghost small", href: "#/start" }, "Add a mandate")),
+          list),
+        h("div", { class: "dash-side" }, receiptsCard))
+    : h("div", { class: "dash-grid" },
+        h("div", { class: "dash-main" }, holds, top, demoTile),
+        h("div", { class: "dash-side" }, recentCard)));
 
   async function load() {
     const created = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "MandateCreated", args: { owner: state.account }, fromBlock: fromBlock() });
@@ -660,7 +676,7 @@ async function viewControl() {
       pub.readContract({ address: D.token, abi: erc20Abi, functionName: "allowance", args: [state.account, D.kindly] }),
     ]);
     const primary = ms.find(([, m]) => mandateStatus(m) === "Active") || ms.find(([, m]) => mandateStatus(m) === "Frozen") || ms[0];
-    top.replaceChildren(await agentCard(primary, load), walletCard(bal, allowance, load));
+    top.replaceChildren(wallet ? walletCard(bal, allowance, load) : await agentCard(primary, load));
     funds.replaceChildren(...fundsPanel(ms, allowance).childNodes);
     list.replaceChildren(...(cards.length ? cards : [h("div", { class: "card empty-state" }, h("p", { class: "muted" }, "No mandates yet. A mandate tells your agent what it may pay."), h("a", { class: "btn dark small", href: "#/start" }, "Set up your agent"))]));
 
@@ -695,9 +711,9 @@ async function viewControl() {
           h("span", { class: "small" }, `${reasonLabel(ex.reason)} · Awaiting your approval`)),
         h("a", { class: "btn dark", href: `#/review/${ev.args.invoiceId}` }, "Review payment")));
     }
-    head.replaceChildren(pageHead("Your AI agent", pending.length ? `${pending.length} payment${pending.length > 1 ? "s need" : " needs"} you.` : "Everything under control.",
+    if (!wallet) head.replaceChildren(pageHead("Your AI agent", pending.length ? `${pending.length} payment${pending.length > 1 ? "s need" : " needs"} you.` : "Everything under control.",
       pending.length ? "Your agent paused these because something looked unusual. Nothing moves until you decide." : "Your agent pays routine invoices within the limits below. Anything unusual waits for you."));
-    holds.replaceChildren(pending.length
+    if (!wallet) holds.replaceChildren(pending.length
       ? h("div", { class: "attn", role: "region", "aria-label": "Payments that need you" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, pending.length > 1 ? `${pending.length} payments need you` : "1 payment needs you"), stamp("HOLD", true)), ...pending)
       : h("div", { class: "calm" }, ICON.check(), "Nothing is waiting for your approval."));
   }
@@ -975,7 +991,7 @@ async function viewStart() {
     const activate = h("button", { class: "btn big" }, "Activate mandate", h("span", { class: "arrow" }, ICON.arrow()));
     const backBtn = h("a", { class: "btn ghost", href: "#/start?step=2" }, "Back");
     const hint = h("p", { class: "small muted" }, "Your wallet asks you to confirm up to two transactions: the allowance (if it changed) and the mandate.");
-    const after = h("div", { class: "row hidden" }, h("a", { class: "btn dark", href: "#/controls" }, "Go to your dashboard"));
+    const after = h("div", { class: "row hidden" }, h("a", { class: "btn dark", href: "#/" }, "Go to Home"));
     activate.onclick = async () => {
       state.quiet = true; // the screen itself shows the result; no toasts on top of it
       try {
@@ -1020,7 +1036,7 @@ async function viewReview() {
   setTitle("Review payment");
   const id = location.hash.split("?")[0].split("/")[2];
   const root = h("section", { class: "view" });
-  if (!/^0x[0-9a-fA-F]{64}$/.test(id || "")) { root.append(h("div", { class: "card" }, h("p", { class: "warn" }, "This review link is incomplete."), h("a", { class: "btn ghost small", href: "#/controls" }, "Back to dashboard"))); return root; }
+  if (!/^0x[0-9a-fA-F]{64}$/.test(id || "")) { root.append(h("div", { class: "card" }, h("p", { class: "warn" }, "This review link is incomplete."), h("a", { class: "btn ghost small", href: "#/" }, "Back to dashboard"))); return root; }
   if (!state.account) { root.append(connectCard("review this payment")); return root; }
   const [hold, inv] = await Promise.all([pub.readContract({ address: D.kindly, abi: K, functionName: "getHold", args: [id] }), pub.readContract({ address: D.kindly, abi: K, functionName: "getInvoice", args: [id] })]);
   const [payee, verified, decs, created] = await Promise.all([
@@ -1078,7 +1094,7 @@ async function viewReview() {
       ev ? [h("dt", {}, "Decision tx"), h("dd", {}, txLink(ev.transactionHash))] : null,
       h("dt", {}, "Merchant address"), h("dd", {}, addrLink(inv.merchant)),
       h("dt", {}, "Held at"), h("dd", {}, new Date(Number(hold.heldAt) * 1000).toLocaleString())))));
-  root.append(h("a", { class: "back", href: "#/controls" }, "Back to dashboard"), card);
+  root.append(h("a", { class: "back", href: "#/" }, "Back to Home"), card);
   return root;
 }
 
@@ -1102,7 +1118,7 @@ function receiptCard({ amount, merchantName, merchant, memo, invoiceId, hash, re
     h("div", { class: "row", style: "justify-content:center" },
       hash && explorerLink(hash) ? h("a", { class: "btn ghost", href: explorerTx(CHAIN.id, hash), target: "_blank", rel: "noopener" }, "View on explorer", ICON.ext()) : null,
       invoiceId ? h("a", { class: "btn ghost", href: `#/activity?id=${invoiceId}` }, "Verify receipt") : null,
-      h("a", { class: "btn dark", href: "#/controls" }, "Done")));
+      h("a", { class: "btn dark", href: "#/" }, "Done")));
 }
 
 // ------------------------------------------------------------------ Invoices: Send · Pay · Receipts
@@ -1314,35 +1330,46 @@ async function viewActivity() {
 }
 
 // ------------------------------------------------------------------ Settings (app tab): wallet, network, safety, install, privacy
+/** Settings, iPhone style: grouped rounded lists. Every row opens something real. */
 function viewSettings() {
   setTitle("Settings");
-  const root = h("section", { class: "view" }, pageHead(null, "Settings", "Your wallet, the network, and how Kindly protects you."));
-  const row = (icon, title, sub, action) => h("li", { class: "set-row" }, h("span", { class: "set-ic", "aria-hidden": "true" }, icon), h("span", { class: "set-txt" }, h("b", {}, title), sub ? h("small", {}, sub) : null), action || null);
-  const go = (href, label) => h("a", { class: "set-go", href, "aria-label": label }, svg('<path d="M9 6l6 6-6 6"/>'));
-  root.append(
-    h("div", { class: "settings-grid" },
-      h("div", { class: "stack", style: "gap:20px" },
-        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "Wallet"), h("ul", { class: "set-list" },
-          state.account
-            ? row(ICON.wallet(), short(state.account), state.wrongNet ? "Connected · wrong network" : "Connected", h("button", { class: "btn ghost small", type: "button", onclick: () => toggleWalletPanel() }, "Details"))
-            : row(ICON.wallet(), "Not connected", window.ethereum ? "Connect to manage your agent" : isMobileDevice() ? "Open Kindly in the MetaMask app to connect" : "Needs a browser wallet such as MetaMask", h("button", { class: "btn dark small", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, "Connect")),
-          row(ICON.aevum(), CHAIN.id === 44005 ? "QDay Aevum Testnet" : CHAIN.name, `Chain ${CHAIN.id} · test tokens only`, h("a", { class: "small", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Faucet")))),
-        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "Safety"), h("ul", { class: "set-list" },
-          row(ICON.snow(), "Freeze your agent", "Stops every payment at once. Find it on Payments.", go("#/controls", "Open Payments to freeze your agent")),
-          row(ICON.gate(), "Allowance and limits", "Kindly may only move a bounded allowance. Reduce it to 0 any time.", go("#/controls", "Open Payments")),
-          row(ICON.shield(), "How your funds are protected", "Spending limits, verified merchants, human approval", h("button", { class: "btn ghost small", type: "button", onclick: () => trustModal("funds") }, "Read")),
-          row(ICON.ext(), "What's visible on-chain", "Blockchains are public. Keep personal details out of memos.", h("button", { class: "btn ghost small", type: "button", onclick: () => trustModal("privacy") }, "Read"))))),
-      h("div", { class: "stack", style: "gap:20px" },
-        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "App"), installSection(h, ICON)),
-        h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "About"), h("ul", { class: "set-list" },
-          row(ICON.play(), "Recorded demo", "Replays a real testnet run, no wallet needed", go("#/demo?replay=1", "Watch the recorded demo")),
-          row(ICON.receipt(), "Source code", "MIT licensed, on GitHub", h("a", { class: "small", href: "https://github.com/yunnaysy/kindly", target: "_blank", rel: "noopener" }, "Open")))),
-        h("p", { class: "small muted" }, "Testnet software with automated tests and no external audit. Never use it with real funds."))));
+  const root = h("section", { class: "view" }, pageHead(null, "Settings", null));
+  const row = (icon, title, sub, action, cls = "") => h("li", { class: `set-row ${cls}` }, h("span", { class: "set-ic", "aria-hidden": "true" }, icon), h("span", { class: "set-txt" }, h("b", {}, title), sub ? h("small", {}, sub) : null), action || null);
+  const go = (href, label) => h("a", { class: "set-go", href, "aria-label": label }, ICON.chev());
+  const pill = (txt, kind = "") => h("span", { class: `spill ${kind}` }, txt);
+  const read = (kind) => h("button", { class: "btn ghost small", type: "button", onclick: () => trustModal(kind) }, "Read");
+  const group = (title, ...rows) => h("div", { class: "set-group" }, title ? h("h2", { class: "set-h" }, title) : null, h("ul", { class: "set-list" }, ...rows));
+  const disconnect = async () => {
+    // A web page can't log a wallet out. MetaMask supports revoking this site's account permission; Kindly forgets the account either way.
+    await window.ethereum?.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] }).catch(() => {});
+    disconnectLocal();
+  };
+  root.append(h("div", { class: "settings-grid" },
+    h("div", { class: "stack", style: "gap:22px" },
+      group("Wallet",
+        state.account
+          ? row(h("span", { class: "fox-av" }, fox(20)), h("code", {}, short(state.account)), state.wrongNet ? "MetaMask · wrong network" : "MetaMask · connected wallet", state.wrongNet ? pill("Wrong network", "warn") : pill("Connected", "ok"), "tap-row")
+          : row(h("span", { class: "fox-av" }, fox(20)), "Connected wallet", window.ethereum ? "Not connected" : isMobileDevice() ? "Open Kindly in the MetaMask app to connect" : "Needs a browser wallet such as MetaMask", h("button", { class: "btn dark small", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, "Connect")),
+        row(ICON.aevum(), CHAIN.id === 44005 ? "QDay Aevum Testnet" : CHAIN.name, `Chain ${CHAIN.id} · test tokens only`, h("a", { class: "small", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Faucet"))),
+      group("Security & Permissions",
+        row(ICON.snow(), "Freeze your agent", "Stops every payment at once. Unfreeze any time.", go("#/?freeze=1", "Go to Home to freeze your agent")),
+        row(ICON.gate(), "Allowance and mandates", "Kindly may only move a bounded allowance. Reduce it to 0 any time.", go("#/wallet", "Open Wallet")),
+        row(ICON.shield(), "How your funds are protected", "Limits, verified merchants, your approval", read("funds")),
+        row(ICON.file(), "What's visible on-chain", "Keep personal details out of memos", read("privacy"))),
+      group("Notifications",
+        row(ICON.bell(), "Payments that need you", "Holds show up on Home within seconds. Push notifications aren't available yet.", pill("In-app")))),
+    h("div", { class: "stack", style: "gap:22px" },
+      h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "App"), installSection(h, ICON)),
+      group("Help & Support",
+        row(ICON.play(), "Recorded demo", "Replays a real testnet run, no wallet needed", go("#/demo?replay=1", "Watch the recorded demo")),
+        row(ICON.help(), "Source code and docs", "MIT licensed, on GitHub", h("a", { class: "set-go", href: "https://github.com/yunnaysy/kindly", target: "_blank", rel: "noopener", "aria-label": "Open the source code on GitHub (new tab)" }, ICON.ext()))),
+      state.account ? group(null, h("li", { class: "set-row danger" }, h("button", { class: "set-btn", type: "button", onclick: disconnect }, ICON.logout(), "Disconnect wallet"))) : null,
+      h("p", { class: "small muted" }, "Testnet software with automated tests and no external audit. Never use it with real funds."))));
   return root;
 }
 
 // ------------------------------------------------------------------ router
-const TAB_TITLE = (p) => p.startsWith("/demo") ? "Live demo" : /^\/(control|start|review)/.test(p) ? "Payments" : /^\/(invoices|merchant|pay|activity)/.test(p) ? "Invoices" : p.startsWith("/settings") ? "Settings" : "Kindly";
+const TAB_TITLE = (p) => p.startsWith("/demo") ? "Live demo" : /^\/(control|start|review)/.test(p) ? "Home" : /^\/(invoices|merchant|pay|activity)/.test(p) ? "Activity" : p.startsWith("/wallet") ? "Wallet" : p.startsWith("/settings") ? "Settings" : "Home";
 /** Phones: tables become stacked cards; each cell gets its column name as a label. */
 new MutationObserver(() => { for (const t of $app.querySelectorAll("table:not([data-labelled])")) { const hs = [...t.querySelectorAll("thead th")].map((x) => x.textContent); t.querySelectorAll("tbody tr").forEach((tr) => [...tr.children].forEach((td, i) => hs[i] && td.setAttribute("data-label", hs[i]))); if (t.tBodies[0]?.rows.length) t.dataset.labelled = "1"; } }).observe($app, { childList: true, subtree: true });
 let lastTab = -1, lastPath = "";
@@ -1375,14 +1402,15 @@ async function route() {
   try {
     let v;
     if (path.startsWith("/demo")) v = viewDemo();
-    else if (path.startsWith("/control")) v = await viewControl();
+    else if (path.startsWith("/control")) v = await viewControl("home");
+    else if (path.startsWith("/wallet")) v = await viewControl("wallet");
     else if (path.startsWith("/start")) v = await viewStart();
     else if (path.startsWith("/review/")) v = await viewReview();
     else if (path.startsWith("/invoices") || path.startsWith("/merchant")) v = await viewMerchant();
     else if (path.startsWith("/pay")) v = await viewPay();
     else if (path.startsWith("/activity")) v = await viewActivity();
     else if (path.startsWith("/settings")) v = viewSettings();
-    else v = viewHome();
+    else v = state.account ? await viewControl("home") : viewHome();
     $app.replaceChildren(v);
     document.querySelector(".appbar-title").textContent = TAB_TITLE(path);
     watchLargeTitle();

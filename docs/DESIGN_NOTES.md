@@ -8,11 +8,11 @@ The primary spec came from a ChatGPT critique of the old UI (summarized below). 
 
 | Token | Hex | Use |
 |---|---|---|
-| canvas | `#F8F6F1` | page background, warm paper |
+| canvas | `#F7F6F3` | page background, warm off-white (was `#F8F6F1`) |
 | surface | `#FFFFFF` | cards, panels |
-| ink | `#302E2B` | text, dark buttons, the Safety Gate bar |
+| ink | `#1D1C1A` | near-black text, dark buttons, the Safety Gate bar (was `#302E2B`) |
 | muted | `#6F6860` | secondary text. The critique suggested `#827B73`; it was darkened to pass WCAG AA (axe-core) |
-| border | `#EAE6DE` / strong `#DCD6CB` | hairlines |
+| border | `#ECEAE5` / strong `#DDD9D1` | hairlines (cards now rely on shadow, not borders) |
 | coral | `#E8755A` | accents only (about 2% of the screen) |
 | coral-ink | `#B9503A` | primary buttons. White on `#E8755A` is only 2.95:1, so buttons use the deeper coral (4.9:1) |
 | coral-soft | `#FBEAE5` | avatars, soft accents |
@@ -22,7 +22,7 @@ The primary spec came from a ChatGPT critique of the old UI (summarized below). 
 | violet (AI) | `#59558D` on `#E9E8F6` | anything the agent says or does, focus rings |
 | frost | `#3F6A8A` on `#E5EEF4` | frozen mandates |
 
-Radius: cards 20px, panels 24px, the demo stage 28px. Shadows: card `0 4px 24px rgba(48,46,43,.045)`, floating `0 12px 32px rgba(48,46,43,.08)`, lifted `0 18px 48px rgba(48,46,43,.12)`.
+Radius: cards 22px, panels and settings groups 26px, controls 14px, the demo stage 28px. Shadows are two soft layers: card `0 1px 2px` + `0 8px 28px` at 4 to 5% ink, floating `0 2px 6px` + `0 16px 40px`, lifted `0 18px 48px rgba(29,28,26,.12)`.
 
 ## Type (Fontshare, self-hosted)
 
@@ -109,20 +109,20 @@ Verified with axe-core (WCAG 2 A/AA, 0 violations on every route, including setu
 
 Kindly is a PWA, not an APK: it installs to the home screen and opens full screen, but it is still the same web app.
 
-- **Phone (≤640px and installed):** a compact app bar (logo, the page title that appears once the large title scrolls away, an icon-only chain chip, the wallet pill) and a bottom tab bar: Home · Demo · Payments · Invoices · Settings. Freeze is one tap from Payments, from Settings → Safety, and from the sidebar on larger screens. Safe areas (`viewport-fit=cover`, `env(safe-area-inset-*)`), `interactive-widget=resizes-content`, tap highlight off, `overscroll-behavior` contain (none when installed), 16px inputs so iOS never zooms.
+- **Phone (≤640px and installed):** a compact app bar (logo, the page title that appears once the large title scrolls away, an icon-only chain chip, the wallet pill) and a bottom tab bar: Home · Activity · Wallet · Settings (it was Home · Demo · Payments · Invoices · Settings; see the light direction below). Freeze is one tap from Home, from Settings → Security & Permissions, and from the sidebar on larger screens. Safe areas (`viewport-fit=cover`, `env(safe-area-inset-*)`), `interactive-widget=resizes-content`, tap highlight off, `overscroll-behavior` contain (none when installed), 16px inputs so iOS never zooms.
 - **Sheets:** on phones every dialog (wallet, trust, privacy, funds) is a bottom sheet with a grabber, drag-to-dismiss (a quarter of its height, or a flick), and a close button. Exit 200ms, faster than the 250ms entrance.
 - **Sticky primary CTAs** above the tab bar: Set up the agent, Run the demo, Approve / Reject, Pay.
-- **Lists:** tables stack into labelled rows; Settings is a grouped native-style list (Wallet, Network, Safety, App, About).
+- **Lists:** tables stack into labelled rows; Settings is a grouped iPhone-style list (Wallet, Security & Permissions, Notifications, App, Help & Support, Disconnect wallet).
 - **Wallet on phones:** with no injected provider, Connect opens a sheet with **Open in MetaMask** (`https://link.metamask.io/dapp/<host>/…`), so the page reopens in MetaMask's browser, plus "Watch the recorded demo". Inside MetaMask the injected provider is used. Wrong network shows a banner with Switch network and a dot on the pill; disconnecting in the wallet returns the app to Connect.
 - **PWA:** `manifest.webmanifest` (standalone, portrait, cream theme), icons 192/512/maskable/apple-touch, Apple meta tags. `sw.js` precaches the shell, icons and fonts and serves hashed assets cache-first; navigation is network-first. It never caches RPC, explorer or wallet traffic (other origins are not intercepted), so chain state is always live. Offline shows "You're offline. Wallet and payment state may be outdated…". A dismissible install hint uses `beforeinstallprompt` on Android and Share → Add to Home Screen on iOS.
 - **Tablet (641 to 1023px):** an icon rail with labels under the icons. The rail toggle opens a full drawer with groups (Escape, a pick or a tap outside closes it).
-- **Desktop (≥1024px):** a 248px sidebar, a top bar with chain chip and wallet, and multi-column dashboards. Payments is allowance and safety + holds on the left, recent activity and your receipts in a sticky 380px column at ≥1280px.
+- **Desktop (≥1024px):** a 248px sidebar, a top bar with chain chip and wallet, and multi-column dashboards. Home is holds + your agent on the left (Wallet is balance, allowance and mandates), recent activity and your receipts in a sticky 380px column at ≥1280px.
 
 ### Sidebar patterns from navbar.gallery (side-bar type)
 
 We looked at the side-bar examples (Aveon, Bud, Ayush Wanjari, Significa, Three Circles, Big Dirty Agency) for patterns only, no code or assets:
 
-- **Grouping with quiet labels** (Bud, Significa): Overview (Home, Demo) · Money (Payments, Invoices) · Account (Settings). Labels are sentence case, 12.5px muted, never ALL CAPS.
+- **Grouping with quiet labels** (Bud, Significa): Money (Home, Activity, Wallet) · Account (Settings); it was Overview · Money · Account before the four-tab change. Labels are sentence case, 12.5px muted, never ALL CAPS.
 - **Active state** (Ayush Wanjari): a filled white pill with a hairline border and the icon in coral, plus `aria-current="page"`.
 - **Account block pinned at the bottom** (Aveon, Bud): the wallet as a card (address in mono, balance and network), which opens the wallet panel.
 - **One prominent action** (Three Circles' colour block, Bud's primary button): **Freeze agent** in frost blue above the wallet block. It goes to Payments and focuses the real Freeze button; freezing still takes a tap and a wallet confirmation.
@@ -147,3 +147,34 @@ We looked at the side-bar examples (Aveon, Bud, Ayush Wanjari, Significa, Three 
 | Minimal Gallery | Restraint check: one accent, no decoration that doesn't carry state |
 
 Deliberately skipped: gradient buttons, liquid glass, CSS text effects, 3D icons, and flashy Aceternity / Magic UI effects (spotlights, beams, count-up numbers on money). They break the anti-slop rules and would make a payments app feel less trustworthy.
+
+## Light iOS fintech direction (ChatGPT, Nov 2026)
+
+The brief: look like a modern iOS fintech app, not a Web3 dashboard. Kindly was already light, so this is a re-tune, not a new theme:
+
+- **Tokens.** Canvas `#F7F6F3`, pure white cards that float on shadow instead of borders, near-black ink `#1D1C1A`, radius 22 to 26px, round icons and avatars (settings icons, receipt icons, the gate mark, empty states). Coral stays the single accent. The charcoal wallet-balance card is kept on purpose as the one high-contrast "card" object, like a bank card in a wallet app.
+- **Four tabs.** Home · Activity · Wallet · Settings.
+  - **Home:** connected, it is your dashboard: payments that need you (holds), your agent with Freeze and the remaining budget, a "See the Safety Gate in action" tile (live demo and the recorded replay), and recent Safety Gate decisions. Not connected, it is the landing page. The demo, Set up and Review screens live under Home.
+  - **Activity:** receipts and verification, plus the merchant Send and Pay screens.
+  - **Wallet:** balance, the bounded allowance and funds panel, every mandate (edit, freeze, revoke) and your receipts.
+  - **Settings:** below.
+  - `#/controls` still works and opens Home.
+- **Freeze is always one tap away:** the Freeze button on the Home agent card, the first row of Settings → Security & Permissions, and the sidebar footer on desktop (`#/?freeze=1` scrolls to and focuses the real button; freezing still takes a tap and a signature).
+- **iPhone-style Settings.** Grouped rounded lists:
+  - **Wallet:** the MetaMask fox, the short address and a Connected pill (or Wrong network), plus the network row with the faucet.
+  - **Security & Permissions:** Freeze your agent, Allowance and mandates, how your funds are protected, what's visible on-chain.
+  - **Notifications:** in-app only. The row says holds show up on Home within seconds and that push isn't available yet.
+  - **App:** install.
+  - **Help & Support:** the recorded demo and the source code.
+  - **Disconnect wallet:** calls `wallet_revokePermissions` and forgets the account locally. It doesn't claim to log the wallet out.
+- **Crypto details moved to detail screens.** Home and Settings use words and small status pills (Active, Connected, Waiting, In-app). Hashes and contract addresses stay on receipts, review and the sheets.
+- **Icons are Lucide** (ISC license, v0.460.0), inline SVG, including the iOS-style gear for Settings. The Safety Gate mark, the Aevum glyph and the token mark stay custom. No emoji icons.
+- **MetaMask fox.**
+  - `web/public/brand/metamask-fox.svg` is the official fox from the logo pack on metamask.io/assets, unmodified (not redrawn, recoloured or stretched).
+  - It appears only next to the word MetaMask: Open in MetaMask, Get MetaMask, the sidebar wallet and the connected-wallet row.
+  - It is always shown on white or a neutral background, and nothing implies MetaMask endorses Kindly.
+  - The assets page gives the colours but no written rules, so we followed standard brand-pack practice.
+- **No WalletConnect logo**, because Kindly only supports injected wallets.
+- **The tab bar stays docked.** The cards float, but the bar doesn't become a floating pill: Expo's native-feel guidance calls that a web-app tell, and a docked bar keeps 44px targets clear of the home indicator.
+- **Copy unchanged in substance.** It still says "bounded allowance" (Kindly never holds funds), and it doesn't overclaim security: the testnet and no-audit note stays in Settings.
+- **Verification.** axe-core reports 0 violations on phone, tablet and desktop for Home (landing and connected), Wallet, Activity, Settings, the demo replay, Review and the sheets. `npm test` passes: forge 32/32 and JS 15/15.

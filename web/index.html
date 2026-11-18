@@ -7,7 +7,7 @@
     <meta name="description" content="Your AI agent can pay invoices for you. Kindly makes sure every payment is verified, within your rules, and safe to approve. Live on QDay Aevum Testnet." />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://rpc-test.qday.info wss://rpc-test.qday.info http://127.0.0.1:8545 http://localhost:8545 ws://localhost:5173; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#F8F6F1" />
+    <meta name="theme-color" content="#F7F6F3" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -30,24 +30,20 @@
         <button type="button" id="sideToggle" class="side-toggle" aria-controls="side" aria-expanded="true" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.5 4.5v15"/></svg></button>
         </div>
         <nav id="nav" aria-label="Main">
-          <p class="nav-group" id="ng-1">Overview</p>
+          <p class="nav-group" id="ng-1">Money</p>
           <ul class="nav-list" role="list" aria-labelledby="ng-1">
-            <li><a href="#/" data-match="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 11L12 4.5l7.5 6.5"/><path d="M6.5 9.5V19h11V9.5"/></svg><span>Home</span></a></li>
-            <li><a href="#/demo" data-match="/demo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.2 5.1A.8.8 0 0 0 8 5.8z"/></svg><span>Demo</span></a></li>
+            <li><a href="#/" data-match="/ /demo /start /review /control"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></a></li>
+            <li><a href="#/activity" data-match="/activity /invoices /merchant /pay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg><span>Activity</span></a></li>
+            <li><a href="#/wallet" data-match="/wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg><span>Wallet</span></a></li>
           </ul>
-          <p class="nav-group" id="ng-2">Money</p>
+          <p class="nav-group" id="ng-2">Account</p>
           <ul class="nav-list" role="list" aria-labelledby="ng-2">
-            <li><a href="#/controls" data-match="/control /start /review"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Payments</span></a></li>
-            <li><a href="#/activity" data-match="/invoices /merchant /pay /activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h11v17l-2.75-1.6-2.75 1.6-2.75-1.6-2.75 1.6z"/><path d="M9.5 8.5h5M9.5 12h5"/></svg><span>Invoices</span></a></li>
-          </ul>
-          <p class="nav-group" id="ng-3">Account</p>
-          <ul class="nav-list" role="list" aria-labelledby="ng-3">
-            <li><a href="#/settings" data-match="/settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/></svg><span>Settings</span></a></li>
+            <li><a href="#/settings" data-match="/settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/> <circle cx="12" cy="12" r="3"/></svg><span>Settings</span></a></li>
           </ul>
         </nav>
         <div class="side-foot">
-          <a class="side-freeze" href="#/controls?freeze=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></svg><span>Freeze agent</span></a>
-          <button type="button" id="sideWallet" class="side-wallet"><span class="sw-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7.5V7a2 2 0 0 1 2-2h10"/><rect x="4" y="7.5" width="16" height="11.5" rx="2.5"/><path d="M15.5 13.25h1.5"/></svg></span><span class="sw-txt"><b id="swName">Not connected</b><small id="swNet">Connect a wallet</small></span></button>
+          <a class="side-freeze" href="#/?freeze=1"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="2" x2="22" y1="12" y2="12"/> <line x1="12" x2="12" y1="2" y2="22"/> <path d="m20 16-4-4 4-4"/> <path d="m4 8 4 4-4 4"/> <path d="m16 4-4 4-4-4"/> <path d="m8 20 4-4 4 4"/></svg><span>Freeze agent</span></a>
+          <button type="button" id="sideWallet" class="side-wallet"><span class="sw-ic" aria-hidden="true"><img class="fox" src="./brand/metamask-fox.svg" alt="" width="20" height="20" /></span><span class="sw-txt"><b id="swName">Not connected</b><small id="swNet">Connect a wallet</small></span></button>
           <p class="side-note">Testnet only. Kindly only ever holds a bounded allowance, never your funds.</p>
         </div>
       </aside>

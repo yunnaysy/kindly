@@ -133,10 +133,12 @@ Final mandate state: spent 0.02499 of 0.5 tUSD8, cap lowered to 0.1, revoked. Re
 | | |
 |---|---|
 | ![Home](docs/screenshots/01-home.png) Home | ![Hold waiting](docs/screenshots/03-demo-hold-waiting.png) RUN DEMO: the $149 invoice waits for you |
-| ![Control Center](docs/screenshots/04-control-center.png) Controls: agent permissions, funds & recovery path | ![Frozen](docs/screenshots/05-control-frozen.png) One tap to freeze |
+| ![Control Center](docs/screenshots/04-control-center.png) Dashboard: agent status, wallet balance, funds & recovery path | ![Frozen](docs/screenshots/05-control-frozen.png) One tap to freeze |
 | ![Merchant](docs/screenshots/06-merchant-invoice-qr.png) Merchant: invoice link + QR | ![Pay](docs/screenshots/07-pay-cop-verified.png) Pay page: Confirmation of Payee |
 | ![Paid](docs/screenshots/08-paid-receipt.png) Paid, with receipt | ![Receipts](docs/screenshots/09-receipts.png) Receipts and settlements |
 | ![Funds](docs/screenshots/12-funds-modal.png) How your funds are protected | ![Mobile](docs/screenshots/10-mobile-home.png) Mobile |
+| ![Setup: allowance](docs/screenshots/16-start-allowance.png) Get started, step 1: a bounded spending allowance, never a deposit | ![Setup: activated](docs/screenshots/18-start-activated.png) Step 3: the mandate is active |
+| ![Needs you](docs/screenshots/13-dashboard-needs-you.png) Dashboard: one payment needs you | ![HOLD review](docs/screenshots/14-hold-review.png) HOLD review: the reason comes first |
 
 (Screenshots come from a local Anvil run of the same build.)
 

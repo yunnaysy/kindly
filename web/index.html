@@ -11,29 +11,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='10' fill='%23302E2B'/><path d='M10 16.5l4 4 8-9' fill='none' stroke='%23F8F6F1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='10' fill='%23302E2B'/><path d='M16 6l8 3.4v5.7c0 5.2-3.4 9.5-8 11.3-4.6-1.8-8-6.1-8-11.3V9.4z' fill='none' stroke='%23F8F6F1' stroke-width='2' stroke-linejoin='round'/><circle cx='16' cy='13' r='1.8' fill='%23F8F6F1'/><circle cx='12.6' cy='18.4' r='1.8' fill='%23F8F6F1'/><circle cx='19.4' cy='18.4' r='1.8' fill='%23F8F6F1'/></svg>" />
   </head>
   <body>
     <a class="skip" href="#app">Skip to content</a>
     <header class="top">
       <div class="top-inner">
-        <a class="brand" href="#/" aria-label="Kindly home"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 12.5l3.5 3.5 7.5-8" /></svg></span>kindly</a>
+        <a class="brand" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/></svg></span><span>kindly</span><span class="tagline">Payments, taken care of.</span></a>
         <nav id="nav" aria-label="Main">
           <a href="#/" data-match="/">Product</a>
           <a href="#/demo" data-match="/demo">Demo</a>
-          <a href="#/controls" data-match="/control">Controls</a>
+          <a href="#/controls" data-match="/control /start /review">Dashboard</a>
           <a href="#/invoices" data-match="/invoices /merchant /pay /activity">Invoices</a>
         </nav>
         <div class="wallet">
-          <span id="net" class="net" title="Network">connecting…</span>
+          <span id="net" class="net" title="Network">Connecting…</span>
           <button id="connect" class="btn dark small">Connect wallet</button>
         </div>
       </div>
     </header>
     <div id="banner" class="banner hidden"></div>
     <main id="app" tabindex="-1"></main>
+    <div id="sr-status" class="sr-only" role="status" aria-live="polite"></div>
     <footer>
-      <span>Testnet only · QDay Aevum (chain 44005) · tUSD8 test stablecoin</span>
+      <span>Testnet only. QDay Aevum (chain 44005), tUSD8 test stablecoin.</span>
       <span><a href="https://faucet.qday.info/en" target="_blank" rel="noopener">Faucet</a> · <a href="https://explorer-test.qday.info" target="_blank" rel="noopener">Explorer</a> · <a href="https://github.com/yunnaysy/kindly" target="_blank" rel="noopener">Source</a></span>
     </footer>
     <script type="module" src="/src/main.js"></script>

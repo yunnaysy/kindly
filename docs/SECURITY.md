@@ -24,7 +24,7 @@ Everything below is checked against `contracts/src/Kindly.sol` and `PayeeRegistr
 
 **Admin powers.** The contract owner (the deployer) can `pause`/`unpause` new payments, invoices, mandates and agent actions. The owner **cannot** move anyone's tokens, change a mandate or approve a hold. Refunds, cancels, rejects, freeze and revoke still work while paused. The registry owner chooses attesters, and on testnet that is a single operator.
 
-### Recovery path (shown in Controls)
+### Recovery path (shown on the Dashboard)
 
 1. **Freeze** the mandate. This is instant and reversible, and the agent can't pay.
 2. **Revoke** the mandate. This is permanent.
@@ -70,7 +70,7 @@ What the UI does about it:
 - The memo field says it is public and suggests a neutral placeholder ("e.g. Order 1042").
 - Creating an invoice asks for confirmation if the memo looks like an email, a phone number or a street address.
 - Demo data is neutral ("Weekly coffee beans", "Kindly Demo Café").
-- "What's visible on-chain" is linked from Pay, Send and Controls.
+- "What's visible on-chain" is linked from Pay, Send and the Dashboard.
 
 ## 6. Known limitations
 

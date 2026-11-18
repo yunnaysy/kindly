@@ -43,7 +43,7 @@ Radius: cards 20px, panels 24px, the demo stage 28px. Shadows: card `0 4px 24px 
 
 ## Motion (150 to 250ms, ease-out quint, no bounce)
 
-- Buttons rise 1px and gain a shadow on hover. Arrows nudge 3px. Cards get a darker border and rise 2px.
+- Buttons rise 1px and gain a shadow on hover, and press down to `scale(.97)`. Arrows nudge 3px. Cards get a darker border and rise 2px.
 - Views fade in with a 4px slide. The QR scales from 0.98 to 1. The modal rises 8px.
 - PAY draws its check stroke (`stroke-dashoffset`). HOLD pulses once in amber. REJECT's cross pops in.
 - The budget bar and risk meters grow from 0. Skeleton shimmer replaces spinners for page loads.
@@ -65,3 +65,41 @@ Radius: cards 20px, panels 24px, the demo stage 28px. Shadows: card `0 4px 24px 
 | @BNBCHAIN 2123020505083199585, @Zorvh87 2123041742371140030 | Not design inspiration (a hackathon and a bug-bounty list). Not applied |
 
 All fonts are free Google Fonts and every icon is inline SVG or a Unicode glyph. No paid assets.
+
+## Guided journey and Web3 identity (ChatGPT flow spec, Nov 2026)
+
+- **Connect → 3-step setup (`#/start`).** (1) *Set a spending allowance*: an exact ERC-20 approval, never unlimited. It shows the token, spender and network as hash chips, estimated gas, and "What this approval means". (2) *How much freedom should your agent have?*: Everyday or Strict presets over the real `MandateParams` fields only (agent, payment limit, total budget, usual amount, valid days, cooldown, any merchant, verified payees only, merchant list). Validation errors appear next to each field. (3) *Review & activate*: a summary and the line "Your AI can request payments but cannot bypass these contract-enforced limits." Activation runs approve (only if the amount changed) and then `createMandate`. The shield draws and the status turns "Active · Limited permissions".
+- **Dashboard home (`#/controls`).** The title is "Everything under control." or "N payments need you." The agent card shows the remaining budget, payment limit, usual amount, allowed merchants (counted from `MandateMerchantSet` events), the expiry date and a prominent **Freeze agent** button. A charcoal wallet card shows the real balance, plus "Kindly may move at most" (the live allowance) and a link to reduce it to 0.
+- **Reason-first HOLD review (`#/review/<invoiceId>`).** It shows the amount, the merchant and whether it is verified, the usual amount, "Difference: N× usual", and "Why it's on hold" (from `getHold().reason`), then what approving or rejecting does. Approving settles once and does not change any limits, which matches `approveHold`. Technical details are folded away.
+- **Receipts.** One receipt card with hash chips for the tx and the receipt, a Verify action and the explorer link.
+- **Identity.** An Aevum chain chip with the live block number. The address pill opens a wallet panel (balance, network, "Kindly never holds your funds"), so the balance is no longer in the navbar. The tUSD8 token badge, the Safety Gate glyph (brand mark, favicon, demo) and hash chips with copy.
+- **Truthful copy.** It says *allowance* and never *deposit*: funds stay in the user's wallet. Run the live demo and the recorded replay stay one click from Home and from the setup screen, so judges can skip onboarding.
+
+## Anti-slop audit (Nov 2026)
+
+Source: @achxvi's post "10 skills that kill AI slop" (x.com/achxvi/status/2123016367125540918). We read all 10 as reference text only. Nothing was installed and none of their scripts were run: uizze.com, pbakaus/impeccable, Leonxlnx/taste-skill, emilkowalski/skills, vercel-labs/web-interface-guidelines, anthropics/skills (frontend-design), Nutlope/hallmark, jakubkrehel/make-interfaces-feel-better, nextlevelbuilder/ui-ux-pro-max-skill and benjitaylor/skills.
+
+**The 3 we used as the checklist:**
+1. **Vercel Web Interface Guidelines.** Testable accessibility and interaction MUSTs: focus-visible, 44px targets, `aria-live`, field-level errors with `aria-invalid`, autocomplete/name attributes, tabular numbers, `Intl` formatting, a page title per route and scroll margins.
+2. **Emil Kowalski's design-eng skill.** Motion craft: one strong ease-out `cubic-bezier(.23,1,.32,1)`, 150–250ms, `scale(.97)` on press, never `ease-in`, and no looping animation on screens people look at all day.
+3. **Anthropic frontend-design.** Slop tells: ALL-CAPS tracked eyebrows, emoji icons, endless float and breathe loops, an arrow appended to every button and the generic card kit.
+
+Jakub Krehel's make-interfaces-feel-better was a secondary reference for `text-wrap: balance/pretty`, tabular nums and hit areas.
+
+| Before | After |
+|---|---|
+| ALL-CAPS tracked eyebrows and table heads; "Why Kindly" style section labels | Sentence case; decorative eyebrows removed |
+| Hero card floating forever; live chips breathing; attention pulse looping | Still by default. The hero card has a Pause/Play control and stops when the tab is hidden |
+| Gradient wash behind the whole page | Removed (flat paper background) |
+| Emoji and ✓/✕ glyphs as icons | One inline SVG stroke set (gate, wallet, copy, external, snowflake, play) |
+| Balance in the navbar; raw addresses and hashes | Address pill and wallet panel; hash chips with copy (announced to screen readers) and an explorer link |
+| Amounts as plain text in proportional figures | tUSD8 badge with `tabular-nums`; `Intl` currency and relative time ("in 21 seconds") |
+| Button text replaced by "Waiting…" while a tx runs | The label stays, with a spinner and `aria-busy` |
+| Form errors only as a toast | Inline `.ferr` (`role=alert`) under the field, `aria-invalid`, focus on the first error, cleared as you type |
+| Mixed control heights; 14px inputs zoomed on iOS | 44px controls (38px small, 44px on coarse pointers); 16px inputs on mobile |
+| Stamp labels at 85% opacity (axe contrast 3.5:1) | Full opacity, so they pass AA |
+| Error view with no way out | "Try again" and "Go home"; `document.title` per route; a `#sr-status` live region |
+
+**Considered and kept:** Anthropic lists cream + terracotta as an AI default, but this palette is the brief's pinned "Quiet trust" spec, and the brief wins. The italic "Safely." accent is also from the spec. The 01/02/03 numbering stays because the steps are a real sequence.
+
+Verified with axe-core (WCAG 2 A/AA, 0 violations on every route, including setup, review and pay), the headless flow (demo, replay, wizard, inline errors, HOLD review, reduced motion), `npm run test:js` (15/15) and the unchanged contract suite (`forge test`, 32/32).

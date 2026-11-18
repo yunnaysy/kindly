@@ -204,3 +204,65 @@ The brief: look like a modern iOS fintech app, not a Web3 dashboard. Kindly was 
 - **Wallet and network pills.** The wallet pill reads "● Connected" with the short address and shows a focus ring only on `:focus-visible`. The network pill is a separate button; its sheet shows the network name, chain ID and a testnet note.
 - **Home order on phones.** What needs you first (hold cards), then "Your agent's spending rules" with the budget bar above the fold, then "Security status" (4 checks). Desktop puts the rules and security status side by side.
 - **Bottom nav.** Solid background (no translucency over content) and extra bottom padding with the safe area, so nothing hides behind it.
+
+## v3: the user's reference style (Nov 2026)
+
+The user rejected the "restrained premium" pass and sent three reference images. v3 follows them closely, and it supersedes the earlier "docked tab bar" note.
+
+- **Canvas and greeting:**
+  - near-white canvas (#FAFAFC)
+  - a big two-line greeting: "Morning" in bold, then the short wallet address in a light weight
+  - one helper line underneath, which says how many payments need you, or "All clear"
+- **Colour cards:**
+  - Bold, flat cards (radius 28) in violet #6050EE, orange #CF4A0E, butter #FFC94D, sky #A8D4FF and pink #FFB8D9, each with a big number and a glossy 3D object that partly overflows the card.
+  - On phones they sit in a horizontal snap carousel. From 1024 px they become a grid, with the allowance card spanning the full row.
+  - Contrast:
+    - White text only on violet (5.4:1) and orange (4.5:1).
+    - Dark ink #17161C on butter (11.7:1), sky (11.6:1) and pink (11.2:1).
+- **3D objects:**
+  - shield, coin stack, cat, wallet and lock
+  - generated for this project (see `docs/brand/3d/README.md`), with the background removed, as 512 px WebP files of 14 to 23 KB each
+  - always `alt=""` with `aria-hidden`, because they are decoration
+- **Lists and pills:**
+  - Section titles are semibold with a grey "View all".
+  - Lists sit on white cards with soft shadows and pastel pill tags.
+  - Filter chips are pills, with the active one filled.
+- **Bottom nav:**
+  - a floating dark pill (#17161C), with the active tab in a white circle
+  - labels visually hidden but still the accessible name
+  - 56 px targets
+  - The desktop sidebar stays white, with a violet pill on the active item.
+- **Onboarding and empty states:**
+  - a centred floating composition of 3D objects
+  - a heavy title with a light second word
+  - a grey subtitle
+  - a black pill primary action, plus a white pill or a "Not now" text link
+- **Unchanged:**
+  - the four tabs and the information architecture
+  - progressive disclosure, honesty labels, the mode badge and the testnet labels
+  - all flows, including connect, review, approve, freeze and revoke
+
+### What we took from each source (Meng To's design-skills list)
+
+Nothing below is vendored into the app. We read the skills, applied the ideas by hand, and ran one tool locally.
+
+- **Impeccable** (pbakaus/impeccable, Apache-2.0):
+  - We ran its browser anti-pattern detector (`detect-antipatterns-browser.js`, `impeccableDetectAsync()`) locally against Welcome, Home and the demo at 390 and 1440 px. It is a test-time tool only and is not shipped.
+  - It found two things, both fixed:
+    - the 10.4 px "tUSD8" token label, now at least 11 px
+    - the tiny "01 / 02 / 03" numbered section labels, now colour tiles with a 3D object
+  - From its checklist we also avoided: purple gradients (cards use flat fills), zero-offset glow halos (we use colour shadows offset downward), uppercase kicker labels above headings, grey text on coloured fills, bounce easing, and thin borders paired with wide shadows.
+- **Emil Kowalski's skills** (MIT), for motion:
+  - ease-out curves, 150 to 250 ms for UI and up to 600 ms only for the one-time entrance of the 3D composition
+  - press feedback with `scale(.98)`
+  - no animation from `scale(0)`
+  - everything gated behind `prefers-reduced-motion: no-preference`
+- **MengTo/skills** (MIT):
+  - the "reference first" workflow: match the user's three reference images closely, with type scale, card radius, colour blocking and object placement taken from the references rather than invented
+- **Stageshow** (benjitaylor/skills, no licence file in the repo, so ideas only and nothing copied):
+  - bento grids of mixed tile sizes (the Shortcuts block)
+  - composing README, OG and video stills around the hero cards
+- **open-design** (nexu-io/open-design, Apache-2.0, ideas only):
+  - pairing one heavy display weight with a light secondary line
+- **solid-glass** (deeplethe/solid-glass, MIT, nothing vendored):
+  - the bottom bar and sheets stay solid and opaque instead of translucent glass, so the text on them keeps AA contrast

@@ -1,7 +1,7 @@
 // Kindly service worker: caches the app shell and static assets only.
 // Chain state (RPC calls, balances, holds, receipts) is never cached: those requests go to other origins and are not intercepted.
-const VERSION = "kindly-shell-v4";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./favicon.svg", "./fonts/fonts.css", "./fonts/satoshi-400.woff2", "./fonts/satoshi-500.woff2", "./fonts/satoshi-700.woff2"];
+const VERSION = "kindly-shell-v5";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./favicon.svg", "./3d/k-shield.webp", "./3d/k-coins.webp", "./3d/k-cat.webp", "./3d/k-wallet.webp", "./3d/k-lock.webp", "./fonts/fonts.css", "./fonts/satoshi-400.woff2", "./fonts/satoshi-500.woff2", "./fonts/satoshi-700.woff2"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", (e) => {

@@ -416,28 +416,34 @@ const VIDEO_URL = "https://github.com/yunnaysy/kindly/blob/main/docs/video/kindl
 /** Welcome: three honest ways in. No account, no email, no password: a wallet is the only identity. */
 function entryPaths() {
   const path = (icon, title, sub, el) => h("li", { class: "path" }, h("span", { class: "path-ic", "aria-hidden": "true" }, icon), h("span", { class: "path-txt" }, h("b", {}, title), h("small", {}, sub)), el);
-  const connectBtn = h("button", { class: "btn dark", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, fox(18), "Connect");
-  return h("ul", { class: "paths", "aria-label": "Ways to try Kindly" },
-    path(ICON.wallet(), "Connect wallet · Try live", window.ethereum ? "MetaMask on QDay Aevum testnet. No sign-up, email or password." : isMobileDevice() ? "Open this page in the MetaMask app to connect." : "Needs a browser wallet such as MetaMask.", connectBtn),
-    path(ICON.play(), "Explore demo without wallet", "A guided replay of real, recorded testnet transactions.", h("a", { class: "btn ghost", href: "#/judge" }, "Start", h("span", { class: "arrow" }, ICON.arrow()))),
-    path(ICON.file(), "Watch the 2-minute walkthrough", "A narrated video of the guided demo, recorded on the live site.", h("a", { class: "btn ghost", href: VIDEO_URL, target: "_blank", rel: "noopener" }, "Watch", ICON.ext())));
+  void path;
+  const connectBtn = h("button", { class: "btn pill-black big", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, fox(18), "Connect wallet · Try live");
+  return h("div", { class: "paths onboard-cta", role: "group", "aria-label": "Ways to try Kindly" },
+    connectBtn,
+    h("p", { class: "small muted cta-note" }, window.ethereum ? "MetaMask on QDay Aevum testnet. No sign-up, email or password." : isMobileDevice() ? "Open this page in the MetaMask app to connect." : "Needs a browser wallet such as MetaMask."),
+    h("a", { class: "btn pill-white big", href: "#/judge" }, "Explore demo without wallet", h("span", { class: "arrow" }, ICON.arrow())),
+    h("a", { class: "text-link", href: VIDEO_URL, target: "_blank", rel: "noopener" }, "Watch the 2-minute walkthrough", ICON.ext()));
 }
+/** Decorative 3D object (generated clay render, see docs/brand/3d/README.md). */
+const obj3d = (name, cls = "") => h("img", { class: `obj3d ${cls}`, src: `./3d/k-${name}.webp`, alt: "", "aria-hidden": "true", width: "512", height: "512", decoding: "async" });
+/** One bold colour card in the Home carousel: a label, one big number, a short line, a 3D object. */
+const kcard = (tone, o, label, value, sub) => h("div", { class: `kcard ${tone}`, role: "listitem" }, h("span", { class: "kc-l" }, label), h("b", { class: "kc-n" }, value), sub ? h("span", { class: "kc-s" }, sub) : null, obj3d(o, "kc-obj"));
+const dayPart = () => { const hr = new Date().getHours(); return hr < 5 ? "Evening" : hr < 12 ? "Morning" : hr < 18 ? "Afternoon" : "Evening"; };
 function viewHome() {
   setTitle(null);
-  const card = heroCard();
   return h("section", { class: "view" },
-    h("div", { class: "hero" },
-      h("div", {},
+    h("div", { class: "hero onboard" },
+      h("div", { class: "orbit", "aria-hidden": "true" }, obj3d("cat", "o-main"), obj3d("shield", "o-1"), obj3d("coins", "o-2"), obj3d("wallet", "o-3"), obj3d("lock", "o-4")),
+      h("div", { class: "onboard-copy" },
         h("span", { class: "netchip big" }, ICON.aevum(), "Runs on QDay Aevum testnet"),
-        h("h1", { class: "display" }, "Payments, handled. ", h("em", {}, "Safely.")),
-        h("p", { class: "lead" }, "AI should be able to pay for you, but it should never have unlimited permission to spend your money. Kindly gives your agent a bounded allowance and fixed rules, and asks you about anything unusual."),
+        h("h1", { class: "display" }, "Payments, handled ", h("span", { class: "light" }, "safely.")),
+        h("p", { class: "lead" }, "AI can pay for you, but never with unlimited permission. Your agent gets a bounded allowance and fixed rules, and anything unusual waits for you."),
         entryPaths(),
-        h("ul", { class: "proof" }, h("li", {}, "Rules checked by the contract"), h("li", {}, "Bounded allowance, funds stay in your wallet"), h("li", {}, "Freeze or revoke in one tap"))),
-      h("figure", { class: "hero-fig" }, card.el, h("figcaption", { class: "small muted" }, "Sample animation, not live data."))),
+        h("ul", { class: "proof" }, h("li", {}, "Rules checked by the contract"), h("li", {}, "Bounded allowance, funds stay in your wallet"), h("li", {}, "Freeze or revoke in one tap")))),
     h("div", { class: "steps3" },
-      step3("01", "Verify", "Every payee is checked against an on-chain registry. A look-alike name or a swapped link is held for you or blocked."),
-      step3("02", "Control", "You set the spending rules: max per payment, total budget, usual amount, allowed merchants and an end date."),
-      step3("03", "Confirm", "Routine bills pay themselves. Anything unusual waits for one tap from you. Duplicates are blocked outright.")),
+      step3("sky", "shield", "Verify", "Every payee is checked against an on-chain registry. A look-alike name or a swapped link is held for you or blocked."),
+      step3("butter", "wallet", "Control", "You set the spending rules: max per payment, total budget, usual amount, allowed merchants and an end date."),
+      step3("pink", "lock", "Confirm", "Routine bills pay themselves. Anything unusual waits for one tap from you. Duplicates are blocked outright.")),
     h("div", { class: "story" },
       h("blockquote", {}, "Kindly doesn't give AI your wallet. ", h("span", {}, "It gives AI a permission to spend.")),
       h("p", { class: "muted", style: "max-width:640px" }, "Every invoice passes through an on-chain Safety Gate. Payments are bounded by spending limits, verified recipients, and your approval when something looks unusual."),
@@ -446,7 +452,7 @@ function viewHome() {
         ? h("div", { class: "contracts" }, h("span", {}, "Kindly ", addrLink(D.kindly)), h("span", {}, "Payee registry ", addrLink(D.registry)), h("span", { class: "row", style: "gap:6px" }, tok(), addrLink(D.token)))
         : h("p", { class: "warn" }, `Contracts not deployed on ${CHAIN.name} yet.`)));
 }
-const step3 = (n, t, body) => h("div", {}, h("span", { class: "num" }, n), h("h2", { class: "h3" }, t), h("p", {}, body));
+const step3 = (tone, o, t, body) => h("div", { class: `s3 ${tone}` }, obj3d(o, "s3-obj"), h("h2", { class: "h3" }, t), h("p", {}, body));
 
 /** The floating payment card on the home page cycles PAY → HOLD → REJECT (static PAY with reduced motion). */
 function heroCard() {
@@ -1033,7 +1039,7 @@ function payRow(r, { open = false, compact = false } = {}) {
         h("dt", {}, "Kindly contract"), h("dd", {}, addrLink(D.kindly))))),
       r.kind === "paid" ? h("a", { class: "small", href: `#/activity?id=${r.invoiceId}` }, "Verify the receipt") : null)));
 }
-const emptyBox = (icon, title, body, action) => h("div", { class: "empty-box" }, h("span", { class: "es-icon" }, icon), h("b", {}, title), h("p", { class: "small muted" }, body), action || null);
+const emptyBox = (icon, title, body, action) => h("div", { class: "empty-box" }, typeof icon === "string" ? obj3d(icon, "es-obj") : h("span", { class: "es-icon" }, icon), h("b", {}, title), h("p", { class: "small muted" }, body), action || null);
 const errorBox = (e, retry) => h("div", { class: "empty-box err", role: "alert" }, h("span", { class: "es-icon" }, ICON.cross()), h("b", {}, "Couldn't load your payments"), h("p", { class: "small muted" }, humanError(e)), h("button", { class: "btn ghost small", type: "button", onclick: retry }, "Try again"));
 
 const term = (t, label = t) => h("button", { class: "term", type: "button", onclick: () => sheet(t, [h("p", {}, GLOSSARY[t])]), "aria-label": `${label}: what does this mean?` }, label, ICON.help());
@@ -1046,12 +1052,17 @@ async function viewControl(mode = "home") {
   const head = h("div", {}, pageHead(null, wallet ? "Wallet" : "Home", wallet ? "Your funds stay in your wallet. Kindly may only move the bounded allowance below." : null));
   const top = h("div", { class: wallet ? "dash-top one" : "home-top" }, h("div", { class: "card panel" }, skeleton()));
   const holds = h("div", {});
-  const metrics = h("div", { class: "metrics" }, ...[0, 1, 2].map(() => h("div", { class: "metric" }, skeleton())));
+  const metrics = h("div", { class: "metrics" });
   const list = h("div", { class: "stack", style: "gap:16px" });
   const recent = h("ul", { class: "plist compact" }, h("li", {}, skeleton()));
   const funds = h("div", { class: "card panel funds" }, skeleton());
-  const demoTile = h("a", { class: "card tile", href: "#/judge" }, h("span", { class: "tile-ic", "aria-hidden": "true" }, ICON.play()), h("span", { class: "tile-txt" }, h("b", {}, "Run guided demo"), h("small", {}, "A normal payment, then an unusual one you decide on")), h("span", { class: "tile-go", "aria-hidden": "true" }, ICON.chev()));
-  const recentCard = h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Recent activity"), h("a", { class: "small", href: "#/activity" }, "See all")), recent);
+  const bt = (tone, href, title, sub, o, big = false) => h("a", { class: `bento-t ${tone}${big ? " big" : ""}`, href }, h("b", {}, title), h("small", {}, sub), o ? obj3d(o, "bt-obj") : null);
+  const demoTile = h("section", { class: "bento-wrap", "aria-labelledby": "bentoH" }, h("div", { class: "sec-row" }, h("h2", { id: "bentoH" }, "Shortcuts")),
+    h("div", { class: "bento" },
+      bt("butter", "#/judge", "Guided demo", "A normal payment, then an unusual one you decide on", "cat", true),
+      bt("sky", "#/wallet", "Wallet", "Balance, allowance and mandates", "wallet"),
+      bt("pink", "#/activity", "Invoices & receipts", "Send, pay or verify", null)));
+  const recentCard = h("section", { class: "recent-wrap", "aria-labelledby": "recentH" }, h("div", { class: "sec-row" }, h("h2", { id: "recentH" }, "Recent activity"), h("a", { class: "view-all", href: "#/activity" }, "View all")), h("div", { class: "card list-card" }, recent));
   root.append(head, wallet
     ? h("div", { class: "dash-grid wallet-grid" },
         h("div", { class: "dash-main" }, h("h2", { class: "sec-h" }, "Connected wallet"), top, h("h2", { class: "sec-h" }, "Allowance"), funds, h("h2", { class: "sec-h" }, "Network & token"), networkCard()),
@@ -1079,7 +1090,7 @@ async function viewControl(mode = "home") {
     if (wallet) {
       top.replaceChildren(walletCard(bal, allowance, load));
       funds.replaceChildren(...fundsPanel(ms, allowance).childNodes);
-      list.replaceChildren(...(cards.length ? cards : [h("div", { class: "card" }, emptyBox(ICON.gate(), "No mandates yet", "A mandate tells your agent what it may pay: limits, merchants and an end date.", h("a", { class: "btn dark small", href: "#/start" }, "Set up your agent")))]));
+      list.replaceChildren(...(cards.length ? cards : [h("div", { class: "card empty-3d" }, h("div", { class: "mini-orbit", "aria-hidden": "true" }, obj3d("shield", "m-1"), obj3d("cat", "m-main"), obj3d("coins", "m-2")), h("h2", {}, "No agent yet"), h("p", { class: "muted" }, "A mandate tells your agent what it may pay: limits, merchants and an end date. Nothing is spent until you set one."), h("a", { class: "btn pill-black big", href: "#/start" }, "Set up your agent"), h("a", { class: "text-link", href: "#/judge" }, "Not now · explore the demo"))]));
       return;
     }
     const { rows } = await myPayments(40);
@@ -1091,15 +1102,17 @@ async function viewControl(mode = "home") {
       pending.push(holdCard({ amount: r.amount, usual: r.usual, reason: r.reason, merchantName: r.name, merchant: r.merchant, tx: r.tx, invoiceId: r.invoiceId }));
     }
     top.replaceChildren(await agentCard(primary, load, allowance));
+    metrics.replaceChildren();
     const pm = primary?.[1]; const pst = primary ? mandateStatus(pm) : null;
-    const metric = (icon, label, value, sub, tone = "") => h("div", { class: `metric ${tone}` }, h("span", { class: "m-ic", "aria-hidden": "true" }, icon), h("small", {}, label), h("b", {}, value), sub ? h("span", { class: "m-sub" }, sub) : null);
-    metrics.replaceChildren(
-      metric(ICON.gate(), "Max per payment", pm ? `${fmt(pm.perPaymentCap)}` : "None", pm ? "tUSD8 · higher is rejected" : "No rules yet", "lav"),
-      metric(ICON.receipt(), "Spent so far", pm ? `${fmt(pm.spent)}` : "0", pm ? `${pm.payments} payment${Number(pm.payments) === 1 ? "" : "s"} · tUSD8` : "tUSD8", "mint"),
-      metric(ICON.pause(), "Needs you", String(pending.length), pending.length ? "Waiting for your decision" : pst === "Frozen" ? "Agent is frozen" : "Unusual payments wait here", pending.length ? "butter" : "peach"));
-    recent.replaceChildren(...(rows.length ? rows.slice(0, 3).map((r) => payRow(r, { compact: true })) : [h("li", {}, emptyBox(ICON.activity(), "No payments yet", "When your agent submits an invoice, Kindly's decision shows up here."))]));
-    head.replaceChildren(pageHead(null, pending.length ? `${pending.length} payment${pending.length > 1 ? "s need" : " needs"} you` : "All clear",
-      pending.length ? "Nothing moves until you decide." : "Routine payments run within your rules. Anything unusual waits for you."));
+    const extras = [
+      kcard("orange", "coins", "Spent so far", pm ? `${fmt(pm.spent)}` : "0", pm ? `${pm.payments} payment${Number(pm.payments) === 1 ? "" : "s"} · tUSD8` : "tUSD8"),
+      kcard("butter", "wallet", "Max per payment", pm ? `${fmt(pm.perPaymentCap)}` : "None", pm ? "tUSD8 · higher is rejected" : "No rules yet"),
+      kcard("sky", "lock", "Needs you", String(pending.length), pending.length ? "Waiting for your decision" : pst === "Frozen" ? "Agent is frozen" : "Unusual payments wait here")];
+    if (primary) top.querySelector(".carousel")?.append(...extras); else metrics.replaceChildren(h("div", { class: "carousel", role: "list", tabindex: "0", "aria-label": "Your numbers" }, ...extras));
+    recent.replaceChildren(...(rows.length ? rows.slice(0, 3).map((r) => payRow(r, { compact: true })) : [h("li", {}, emptyBox("coins", "No payments yet", "When your agent submits an invoice, Kindly's decision shows up here."))]));
+    head.replaceChildren(h("div", { class: "greet" },
+      h("h1", { class: "greet-h" }, h("b", {}, dayPart()), h("span", {}, short(state.account))),
+      h("p", { class: "greet-sub" }, pending.length ? `${pending.length} payment${pending.length > 1 ? "s need" : " needs"} you. Nothing moves until you decide.` : "All clear. Routine payments run within your rules.")));
     holds.replaceChildren(pending.length ? h("div", { class: "holds", role: "region", "aria-label": "Payments that need you" }, ...pending) : h("div", { class: "calm" }, ICON.check(), "Nothing is waiting for your approval."));
   }
   try { await load(); } catch (e) { top.replaceChildren(h("div", { class: "card" }, errorBox(e, () => route()))); }
@@ -1141,12 +1154,14 @@ async function agentCard(entry, reload, allowance) {
   };
   const chip = st === "Active" ? h("span", { class: "chip ok live" }, "Agent active") : st === "Frozen" ? h("span", { class: "chip sky" }, ICON.snow(), "Frozen") : h("span", { class: "chip bad" }, st);
   const date = (t) => h("time", { datetime: new Date(Number(t) * 1000).toISOString() }, new Date(Number(t) * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }));
-  return h("div", { class: `card panel agent ${st.toLowerCase()}` },
-    h("div", { class: "row between" }, h("div", { class: "row" }, h("span", { class: "gate-mark" }, ICON.gate()), h("h2", { class: "h3 agent-t" }, "Allowance left")), chip),
-    h("div", { class: "stack", style: "gap:6px" },
-      h("span", { class: "small muted" }, st === "Frozen" ? "Your agent can spend, paused" : "Your agent can still spend"),
-      h("div", { class: "remaining" }, h("span", { class: "n" }, fmt(shown)), h("small", {}, "of ", fmt(m.totalBudget), " "), tok(), h("span", { class: "pct" }, `${pctLeft}% left`)),
-      h("div", { class: "bar", role: "progressbar", "aria-valuenow": String(pctLeft), "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Budget left" }, h("span", { style: `--w:${Math.min(pctLeft, 100) / 100}` }))),
+  const hero = h("div", { class: `kcard violet hero-k agent ${st.toLowerCase()}`, role: "listitem" },
+    h("div", { class: "kc-top" }, h("h2", { class: "kc-l agent-t" }, "Allowance left"), chip),
+    h("div", { class: "remaining" }, h("span", { class: "n kc-n" }, fmt(shown)), h("small", {}, "of ", fmt(m.totalBudget), " tUSD8 · ", h("span", { class: "pct" }, `${pctLeft}% left`))),
+    h("div", { class: "bar", role: "progressbar", "aria-valuenow": String(pctLeft), "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Budget left" }, h("span", { style: `--w:${Math.min(pctLeft, 100) / 100}` })),
+    h("span", { class: "kc-s" }, st === "Frozen" ? "Your agent can spend, paused" : "Your agent can still spend"),
+    obj3d("shield", "kc-obj"));
+  return h("div", { class: "agent-wrap" },
+    h("div", { class: "carousel", role: "list", tabindex: "0", "aria-label": "Your agent at a glance" }, hero),
     live ? h("div", { class: "freeze-row" }, freeze, h("span", { class: "small muted" }, m.frozen ? "Your agent can't pay anything while frozen." : "Stops every payment at once.")) : h("p", { class: "small muted" }, "These rules can no longer spend."),
     h("details", { class: "tech rules-d" }, h("summary", {}, "Spending rules & details"), h("div", { class: "body stack", style: "gap:14px" },
     h("dl", { class: "facts" },
@@ -1754,7 +1769,7 @@ async function viewActivity() {
     if (!rows) return;
     for (const b of seg.querySelectorAll("button")) b.querySelector(".seg-n").textContent = String(b.dataset.f === "all" ? rows.length : rows.filter((r) => r.kind === b.dataset.f).length);
     const shown = rows.filter((r) => filter === "all" || r.kind === filter);
-    list.replaceChildren(...(shown.length ? shown.map((r) => payRow(r, { open: !!q.get("inv") && same(q.get("inv"), r.invoiceId) })) : [h("li", {}, emptyBox(filter === "held" ? ICON.check() : ICON.activity(), ...EMPTY[filter], filter === "all" ? h("a", { class: "btn ghost small", href: "#/judge" }, "Run guided demo") : null))]));
+    list.replaceChildren(...(shown.length ? shown.map((r) => payRow(r, { open: !!q.get("inv") && same(q.get("inv"), r.invoiceId) })) : [h("li", {}, emptyBox(filter === "held" ? ICON.check() : "coins", ...EMPTY[filter], filter === "all" ? h("a", { class: "btn ghost small", href: "#/judge" }, "Run guided demo") : null))]));
   };
   for (const [f, t] of [["all", "All"], ["paid", "Paid"], ["held", "Held"], ["rejected", "Rejected"]]) seg.append(h("button", { type: "button", "data-f": f, "aria-pressed": "false", onclick: () => { filter = f; paint(); } }, t, h("span", { class: "seg-n", "aria-hidden": "true" })));
   const load = async () => {

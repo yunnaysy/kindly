@@ -10,7 +10,7 @@ The gate is a set of **fixed, deterministic contract rules**, not an AI model. T
 
 | | |
 |---|---|
-| ![Home: one payment needs you, allowance left](docs/screenshots/v2-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v2-mobile-review-confirm.png) |
+| ![Home: greeting, allowance card with the 3D shield, colour carousel](docs/screenshots/v3-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v3-mobile-review-confirm.png) |
 
 **Demo video:** [docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:10, English voiceover (edge-tts neural voice) and burned-in captions, recorded from the redesigned live site; the Home, review and Activity scenes come from a labelled local rehearsal because the live site has no connected wallet).
 
@@ -189,10 +189,10 @@ White-first redesign (Nov 2026): a cat + shield mark, four tabs (Home · Activit
 
 | | |
 |---|---|
-| ![Home](docs/screenshots/v2-mobile-home.png) Home: the held payment first, then allowance left, Freeze and recent items | ![Review](docs/screenshots/v2-mobile-review.png) Review: merchant, amount, why it was held, usual amount, mandate used and safety rule |
-| ![Confirm](docs/screenshots/v2-mobile-review-confirm.png) Approving needs a ticked check and "Confirm and sign" | ![Activity](docs/screenshots/v2-mobile-activity-held.png) Activity: All / Paid / Held / Rejected; tap a row for the tx hash, contract and checks |
-| ![Wallet](docs/screenshots/v2-mobile-wallet.png) Wallet: connected wallet, allowance, network & token, mandates | ![Settings](docs/screenshots/v2-mobile-settings.png) Settings: Wallet / Safety / Preferences / About |
-| ![Desktop home](docs/screenshots/v2-desktop-home.png) Desktop Home | ![Icons](docs/screenshots/icons-homescreen-mockup.png) App icon on a home screen |
+| ![Home](docs/screenshots/v3-mobile-home.png) Home: greeting, then anything held for you, the allowance card, Freeze and recent activity | ![Review](docs/screenshots/v3-mobile-review.png) Review: merchant, amount, why it was held, usual amount, mandate used and safety rule |
+| ![Confirm](docs/screenshots/v3-mobile-review-confirm.png) Approving needs a ticked check and "Confirm and sign" | ![Activity](docs/screenshots/v3-mobile-activity-held.png) Activity: All / Paid / Held / Rejected; tap a row for the tx hash, contract and checks |
+| ![Wallet](docs/screenshots/v3-mobile-wallet.png) Wallet: connected wallet, allowance, network & token, mandates | ![Settings](docs/screenshots/v3-mobile-settings.png) Settings: Wallet / Safety / Preferences / About |
+| ![Desktop home](docs/screenshots/v3-desktop-home.png) Desktop Home | ![Icons](docs/screenshots/icons-homescreen-mockup.png) App icon on a home screen |
 
 (Screenshots come from a local Anvil rehearsal of the same build, so they show the `LOCAL REHEARSAL` badge, except the replay shots, which use the recorded Aevum run.)
 
@@ -205,11 +205,11 @@ Kindly looks and behaves like a native app on a phone, without an APK. Open http
 
 | Phone | Phone | Phone | Phone |
 |---|---|---|---|
-| ![Home](docs/screenshots/v2-mobile-home.png) | ![Wallet](docs/screenshots/v2-mobile-wallet.png) | ![Hold review](docs/screenshots/v2-mobile-review.png) | ![Settings](docs/screenshots/v2-mobile-settings.png) |
+| ![Home](docs/screenshots/v3-mobile-home.png) | ![Wallet](docs/screenshots/v3-mobile-wallet.png) | ![Hold review](docs/screenshots/v3-mobile-review.png) | ![Settings](docs/screenshots/v3-mobile-settings.png) |
 
 | Desktop | Tablet |
 |---|---|
-| ![Desktop home](docs/screenshots/v2-desktop-home.png) | ![Tablet](docs/screenshots/v2-tablet-home.png) |
+| ![Desktop home](docs/screenshots/v3-desktop-home.png) | ![Tablet](docs/screenshots/v3-tablet-home.png) |
 
 ## Architecture
 

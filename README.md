@@ -8,6 +8,8 @@ Built for **Aevum Builder Challenge #1** on **QDay Aevum Testnet** (chain `44005
 
 ![Run demo: three invoices, three decisions](docs/screenshots/02-demo-complete.png)
 
+Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md)
+
 ## The problem
 
 AI agents are starting to pay bills. The two most common ways small businesses lose money on invoices are exactly the ones an unsupervised agent would make worse:
@@ -129,9 +131,10 @@ Final mandate state: spent 0.02499 of 0.5 tUSD8, cap lowered to 0.1, revoked. Re
 | | |
 |---|---|
 | ![Home](docs/screenshots/01-home.png) Home | ![Hold waiting](docs/screenshots/03-demo-hold-waiting.png) RUN DEMO: the $149 invoice waits for you |
-| ![Control Center](docs/screenshots/04-control-center.png) Control Center: held invoice queue, mandates, decisions | ![Frozen](docs/screenshots/05-control-frozen.png) One tap to freeze |
+| ![Control Center](docs/screenshots/04-control-center.png) Controls: agent permissions, funds & recovery path | ![Frozen](docs/screenshots/05-control-frozen.png) One tap to freeze |
 | ![Merchant](docs/screenshots/06-merchant-invoice-qr.png) Merchant: invoice link + QR | ![Pay](docs/screenshots/07-pay-cop-verified.png) Pay page: Confirmation of Payee |
 | ![Paid](docs/screenshots/08-paid-receipt.png) Paid, with receipt | ![Receipts](docs/screenshots/09-receipts.png) Receipts and settlements |
+| ![Funds](docs/screenshots/12-funds-modal.png) How your funds are protected | ![Mobile](docs/screenshots/10-mobile-home.png) Mobile |
 
 (Screenshots come from a local Anvil run of the same build.)
 

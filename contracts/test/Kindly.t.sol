@@ -409,4 +409,75 @@ contract KindlyTest is Test {
         assertEq(uint8(d), uint8(Kindly.Decision.Hold));
         assertEq(usd.balanceOf(payer), start);
     }
+
+    /// Replay / duplicate protection: an invoice number paid once can never be paid again by the same payer,
+    /// whether the agent, a hold approval or the payer submits it.
+    function testFuzz_InvoiceNumberNeverPaidTwice(bytes32 ref, uint128 amount, uint8 path) public {
+        amount = uint128(bound(amount, 1, 70_000));
+        uint256 m = _mandate(200_000, 5_000_000, 25_000, false);
+        bytes32 a = _inv(merchant, ref, amount);
+        vm.prank(payer);
+        k.payInvoice(a, NH, amount);
+        uint256 after1 = usd.balanceOf(payer);
+        bytes32 b = _inv(merchant, ref, amount); // merchant re-sends the same number
+        path = uint8(bound(path, 0, 1));
+        if (path == 0) {
+            (Kindly.Decision d, Kindly.Reason r,) = _process(m, b, NH);
+            assertEq(uint8(d), uint8(Kindly.Decision.Reject));
+            assertEq(uint8(r), uint8(Kindly.Reason.Duplicate));
+        } else {
+            vm.prank(payer);
+            vm.expectRevert(Kindly.DuplicateInvoice.selector);
+            k.payInvoice(b, NH, amount);
+        }
+        assertEq(usd.balanceOf(payer), after1);
+    }
+
+    /// Access control: nobody but the mandate owner can change limits, freeze, revoke, approve or reject holds.
+    function testFuzz_OnlyOwnerControlsMandate(address caller) public {
+        vm.assume(caller != payer);
+        uint256 m = _mandate(200_000, 500_000, 25_000, false);
+        bytes32 h = _inv(merchant, "HOLD-ME", 150_000);
+        _process(m, h, NH); // 6x usual -> HOLD
+        vm.startPrank(caller);
+        vm.expectRevert(Kindly.NotMandateOwner.selector);
+        k.updateMandate(m, 1e12, 1e12, 0, uint64(block.timestamp + 1 days), 0, true, false);
+        vm.expectRevert(Kindly.NotMandateOwner.selector);
+        k.setFrozen(m, true);
+        vm.expectRevert(Kindly.NotMandateOwner.selector);
+        k.revokeMandate(m);
+        vm.expectRevert(Kindly.NotMandateOwner.selector);
+        k.setMandateMerchant(m, caller, true);
+        vm.expectRevert(Kindly.NotMandateOwner.selector);
+        k.approveHold(h, NH);
+        vm.expectRevert(Kindly.NotMandateOwner.selector);
+        k.rejectHold(h);
+        vm.stopPrank();
+    }
+
+    /// Frozen or revoked mandates can't spend, for any invoice.
+    function testFuzz_FrozenOrRevokedNeverPays(uint128 amount, bool revoke) public {
+        amount = uint128(bound(amount, 1, 70_000));
+        uint256 m = _mandate(200_000, 500_000, 25_000, false);
+        vm.prank(payer);
+        if (revoke) k.revokeMandate(m);
+        else k.setFrozen(m, true);
+        bytes32 id = _inv(merchant, "F", amount);
+        vm.prank(agent);
+        vm.expectRevert(revoke ? Kindly.MandateInactive.selector : Kindly.MandateIsFrozen.selector);
+        k.agentProcess(m, id, NH);
+        assertEq(k.mandateRemaining(m), 0);
+    }
+
+    /// Documents a known accounting limitation: a hold the owner approves is paid from the owner's wallet
+    /// but is not added to the mandate's `spent` counter (the agent's automatic budget is unchanged).
+    function test_KnownLimitation_ApprovedHoldNotCountedInSpent() public {
+        uint256 m = _mandate(200_000, 500_000, 25_000, false);
+        bytes32 h = _inv(merchant, "BIG", 150_000);
+        _process(m, h, NH);
+        vm.prank(payer);
+        k.approveHold(h, NH);
+        assertEq(uint8(k.getInvoice(h).status), uint8(Kindly.Status.Paid));
+        assertEq(k.getMandate(m).spent, 0);
+    }
 }

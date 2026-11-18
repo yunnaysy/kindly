@@ -1,0 +1,314 @@
+{
+  "chainId": 31337,
+  "kindly": "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
+  "registry": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+  "token": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+  "merchant": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  "payer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "agent": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+  "scale": "1 USD in the story = 0.001 tUSD8 on testnet",
+  "mandate": {
+    "id": "1",
+    "spent": "0.02499",
+    "budget": "0.5",
+    "cap": "0.1",
+    "frozen": false,
+    "revoked": true
+  },
+  "decisions": [
+    {
+      "invoice": "INV-1001 $24.99",
+      "invoiceId": "0x5d8dd05adb76760977c307af7fed38a6c94e76f8255c70b55087b1b7bb5a5d9e",
+      "decision": "PAY",
+      "reason": "Ok",
+      "risk": 19,
+      "explanation": "Paid 0.02499 tUSD8 to \"Sunrise Coffee Co\". It matches the usual amount (0.025 tUSD8, 1.0x), the payee is confirmed and it fits the mandate.",
+      "hash": "0xa5b91f82eac2a859e7a3ab74341994158e3a6af1a312b3ea6f4e9484d1f52520",
+      "explorer": null
+    },
+    {
+      "invoice": "INV-1002 $149",
+      "invoiceId": "0x349c3e3df99a1c435ae4040e44d81c336ffa5d5745529d1803281e657dd40e02",
+      "decision": "HOLD",
+      "reason": "AmountAnomaly",
+      "risk": 75,
+      "explanation": "Held: 0.149 tUSD8 is 6.0x the usual 0.02499 tUSD8 for \"Sunrise Coffee Co\". A person needs to approve unusual amounts.",
+      "hash": "0x79ba525b39e1430f5c59f432e116f1253526a9e4db885752226e9d58ed69b871",
+      "explorer": null
+    },
+    {
+      "invoice": "INV-1001 re-sent $24.99",
+      "invoiceId": "0xfe1d149dd6afc5d65f0ac124bbbb638e64e9b22100b3a7dfcd29f37a2df76279",
+      "decision": "REJECT",
+      "reason": "Duplicate",
+      "risk": 95,
+      "explanation": "Rejected: \"Sunrise Coffee Co\" already got paid for this invoice number. Paying again would be a double payment.",
+      "hash": "0x743d0442d4ddcfa85cce813b9882350a63d9b87593ce093ff0a05b8fa81ba829",
+      "explorer": null
+    },
+    {
+      "invoice": "INV-1003 $250",
+      "invoiceId": "0xb2f9290a0673a922d5995878e12f380dbe19e55c76f48a0d0d45c72cc45ecd4d",
+      "decision": "REJECT",
+      "reason": "OverCap",
+      "risk": 90,
+      "explanation": "Rejected: 0.25 tUSD8 is above the per-payment cap of 0.2 tUSD8.",
+      "hash": "0xc2a8236bf240cfee36e98ec386e9919e691102d03e086facf898804a8bb8b028",
+      "explorer": null
+    }
+  ],
+  "receiptInv1002Verified": true,
+  "invoices": {
+    "a": {
+      "id": "0x5d8dd05adb76760977c307af7fed38a6c94e76f8255c70b55087b1b7bb5a5d9e",
+      "status": "Refunded",
+      "amount": "0.02499",
+      "refunded": "0.02499",
+      "paidBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "mandateId": "1",
+      "receipt": "0xe389e08ac96836b2e77ff963110ccda39cd15870ae8e1f3e41376dc1ce051ff6"
+    },
+    "b": {
+      "id": "0x349c3e3df99a1c435ae4040e44d81c336ffa5d5745529d1803281e657dd40e02",
+      "status": "Refunded",
+      "amount": "0.149",
+      "refunded": "0.149",
+      "paidBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "mandateId": "1",
+      "receipt": "0x548ebe93a0be0c9c7460d2c1ee5e30fbb0b67a4faeea5f3fe6126f0dc4d960ce"
+    },
+    "c": {
+      "id": "0xfe1d149dd6afc5d65f0ac124bbbb638e64e9b22100b3a7dfcd29f37a2df76279",
+      "status": "Cancelled",
+      "amount": "0.02499",
+      "refunded": "0",
+      "paidBy": "0x0000000000000000000000000000000000000000",
+      "mandateId": "0",
+      "receipt": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "e": {
+      "id": "0xb2f9290a0673a922d5995878e12f380dbe19e55c76f48a0d0d45c72cc45ecd4d",
+      "status": "Cancelled",
+      "amount": "0.25",
+      "refunded": "0",
+      "paidBy": "0x0000000000000000000000000000000000000000",
+      "mandateId": "0",
+      "receipt": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "dInv": {
+      "id": "0xa7672303c77e203d7426e44996ccca7e16153a4456e2aa835e16ede427de0ecc",
+      "status": "Refunded",
+      "amount": "0.05",
+      "refunded": "0.05",
+      "paidBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "mandateId": "0",
+      "receipt": "0xa9e51efde9863e0b297e7f464427fda24104f49ff4667b7fe3c3486eb282ea8c"
+    }
+  },
+  "steps": [
+    {
+      "step": "mint mock tUSD8 to payer",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x14095efda0ee35d7b139529fabf5ce0ff54ced58e38ed641d1ff9afbbd373fa7",
+      "block": 4,
+      "explorer": null
+    },
+    {
+      "step": "merchant registers payee name",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0x90db9afe53546f51da2eaca9c1abc8de4c809bc110c7a4df270acf817b1405d0",
+      "block": 5,
+      "explorer": null
+    },
+    {
+      "step": "attester verifies merchant name hash",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x6402828a120b1b6ff775a9c5ebee13c4405d827d7c6e8d1138098506cd027409",
+      "block": 6,
+      "explorer": null
+    },
+    {
+      "step": "payer approves 0.3 tUSD8 to Kindly (exact, not unlimited)",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0xe16cb17b6595721439187bcc6718def73f3a4f76fc2b63d23e621127d78289bc",
+      "block": 7,
+      "explorer": null
+    },
+    {
+      "step": "payer creates mandate: cap $200, budget $500, usual $25, allowlist [Sunrise], verified-only",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x8281ca5cac4a30a673f33bbe23911bf8f0b99d88a738da7e687d794abbbb4fd5",
+      "block": 8,
+      "explorer": null
+    },
+    {
+      "step": "merchant issues INV-1001 ($24.99 → 0.02499 tUSD8)",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0x0999ff2dd3348b7f4ecfa3cd22f275b88907d5010458977d350091c710780d4b",
+      "block": 9,
+      "explorer": null
+    },
+    {
+      "step": "agent → Safety Gate: INV-1001 $24.99 ⇒ PAY (Ok, risk 19)",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "hash": "0xa5b91f82eac2a859e7a3ab74341994158e3a6af1a312b3ea6f4e9484d1f52520",
+      "explorer": null
+    },
+    {
+      "step": "merchant issues INV-1002 ($149 → 0.149 tUSD8)",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xd7e91b48497b571d3169292b200e18a69678b953252fb6a736d27afefc1b0d73",
+      "block": 11,
+      "explorer": null
+    },
+    {
+      "step": "agent → Safety Gate: INV-1002 $149 ⇒ HOLD (AmountAnomaly, risk 75)",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "hash": "0x79ba525b39e1430f5c59f432e116f1253526a9e4db885752226e9d58ed69b871",
+      "explorer": null
+    },
+    {
+      "step": "payer approves held INV-1002 (explicit approval tx)",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x0346324db55f994e9152f97bacbf1a2292bdd54048efc501568c53ac5b06dcfb",
+      "block": 13,
+      "explorer": null
+    },
+    {
+      "step": "merchant issues INV-1001 (re-sent) ($24.99 → 0.02499 tUSD8)",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xab69e6095519569cb1336c0d03d0bfa6a25ca2e70cb964e96068ccbe69118fa2",
+      "block": 14,
+      "explorer": null
+    },
+    {
+      "step": "agent → Safety Gate: INV-1001 re-sent $24.99 ⇒ REJECT (Duplicate, risk 95)",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "hash": "0x743d0442d4ddcfa85cce813b9882350a63d9b87593ce093ff0a05b8fa81ba829",
+      "explorer": null
+    },
+    {
+      "step": "merchant issues INV-1003 ($250 → 0.25 tUSD8)",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xe5b0d8c8341563d5964950fd52aaf96541d24a19583da07fbdacf3078cc3be8c",
+      "block": 16,
+      "explorer": null
+    },
+    {
+      "step": "agent → Safety Gate: INV-1003 $250 ⇒ REJECT (OverCap, risk 90)",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "hash": "0xc2a8236bf240cfee36e98ec386e9919e691102d03e086facf898804a8bb8b028",
+      "explorer": null
+    },
+    {
+      "step": "control center: lower per-payment cap to $100",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x7dcbf41554bbe7a71a5400f5636e2856d89e0601ede9f2feb86d9872b99a3fca",
+      "block": 18,
+      "explorer": null
+    },
+    {
+      "step": "control center: freeze mandate",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x1d3247eee2d5e0210fda19ec686de17bc4f8161c99250c5f0fe474331b9e454d",
+      "block": 19,
+      "explorer": null
+    },
+    {
+      "step": "agent while frozen",
+      "blocked": "MandateIsFrozen",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "control center: unfreeze mandate",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x48685e6875c19670e1b96095eea6bf040f3ed1202abfd55ab8c871cd059e3d41",
+      "block": 20,
+      "explorer": null
+    },
+    {
+      "step": "control center: revoke mandate",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x9420acfd2ba3895e92e9a048610c833704b1659b48a827bd1df5cb3feeb9a19d",
+      "block": 21,
+      "explorer": null
+    },
+    {
+      "step": "agent after revoke",
+      "blocked": "MandateInactive",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "merchant issues INV-2001 ($50 → 0.05 tUSD8)",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0x691e327f28a50e4304c9c48821a6ebd8a1a0b2eb88383fe8b5c288bf1094ac71",
+      "block": 22,
+      "explorer": null
+    },
+    {
+      "step": "payer pays look-alike name 'Sunrise Cofee Co'",
+      "blocked": "PayeeMismatch",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "payer pays with tampered max amount",
+      "blocked": "AmountAboveMax",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "payer pays INV-2001 directly with CoP name pin",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "hash": "0x29594a1b779f38965c116ca6272ffc3ca97913c627547e04868bfe73831264a0",
+      "block": 23,
+      "explorer": null
+    },
+    {
+      "step": "double payment of INV-2001",
+      "blocked": "InvoiceNotOpen",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "merchant approves 0.22399 tUSD8 for refunds",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xad8e7ede56691897cc91a2808f7bfefd77300a1b6c1a8a339754a38c4ea0afa2",
+      "block": 24,
+      "explorer": null
+    },
+    {
+      "step": "merchant refunds INV-1001 in full",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0x5d89f040ce1dccfbdb4077fd82f1802bceec765667cef55f8aa293bd4a2c5a86",
+      "block": 25,
+      "explorer": null
+    },
+    {
+      "step": "merchant refunds INV-1002 in full",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xc4b2a3a51df3930aeaca6c5915b2ceee27186dbcb37b5dce061303bdb632be7a",
+      "block": 26,
+      "explorer": null
+    },
+    {
+      "step": "merchant refunds INV-2001 in full",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xe00cb1a913850ab4a9fc58004bdd9c327af3eea0534f5cfdf7160cde3dd21942",
+      "block": 27,
+      "explorer": null
+    },
+    {
+      "step": "merchant cancels re-sent INV-1001",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0x85e4c852fc904693569ed49474fbbff983e2bc3929332326b7346c58159f70f0",
+      "block": 28,
+      "explorer": null
+    },
+    {
+      "step": "merchant cancels INV-1003",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "hash": "0xcc891637730a18ded53cdde56a8d9935b0e88cbafba20263aa087602737f3208",
+      "block": 29,
+      "explorer": null
+    }
+  ],
+  "finishedAt": "2026-11-18T14:54:38.400Z"
+}

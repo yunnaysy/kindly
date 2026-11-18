@@ -1,0 +1,307 @@
+{
+  "chainId": 44005,
+  "kindly": "0x944e66ba2642a2e83453e62bb48906f22eecb1b3",
+  "registry": "0xff6ce066fa19b68bd3150b8a2f0eff477fad2679",
+  "token": "0x456569838f1d43009A91ebA4263147Afd7233483",
+  "merchant": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+  "payer": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+  "agent": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+  "scale": "1 USD in the story = 0.001 tUSD8 on testnet",
+  "mandate": {
+    "id": "1",
+    "spent": "0.02499",
+    "budget": "0.5",
+    "cap": "0.1",
+    "frozen": false,
+    "revoked": true
+  },
+  "decisions": [
+    {
+      "invoice": "INV-1001 $24.99",
+      "invoiceId": "0x4e8203ddf5e70fa83b225d30e5c45af78443ffc4d4a150e7eff0c1ee5c35eb0e",
+      "decision": "PAY",
+      "reason": "Ok",
+      "risk": 19,
+      "explanation": "Paid 0.02499 tUSD8 to \"Sunrise Coffee Co\". It matches the usual amount (0.025 tUSD8, 1.0x), the payee is confirmed and it fits the mandate.",
+      "hash": "0x98784b2c6080f9aa7fbaa74c845c5baef6a8ff75997484fea355afb8ce824253",
+      "explorer": "https://explorer-test.qday.info/tx/0x98784b2c6080f9aa7fbaa74c845c5baef6a8ff75997484fea355afb8ce824253"
+    },
+    {
+      "invoice": "INV-1002 $149",
+      "invoiceId": "0xe1ea77218d5b49b26494eb4c88b250f21c283d3b7190d32adcdfc1293b0c2c45",
+      "decision": "HOLD",
+      "reason": "AmountAnomaly",
+      "risk": 75,
+      "explanation": "Held: 0.149 tUSD8 is 6.0x the usual 0.02499 tUSD8 for \"Sunrise Coffee Co\". A person needs to approve unusual amounts.",
+      "hash": "0xd37ef58d52344b5d63b750f9197ae6095b28862f52581dbb8ac209a2d9495e6d",
+      "explorer": "https://explorer-test.qday.info/tx/0xd37ef58d52344b5d63b750f9197ae6095b28862f52581dbb8ac209a2d9495e6d"
+    },
+    {
+      "invoice": "INV-1001 re-sent $24.99",
+      "invoiceId": "0xc877091ac52cd186e9aad55143ad6a07e38f37f9b745c2a006d2bfe48d2e85cc",
+      "decision": "REJECT",
+      "reason": "Duplicate",
+      "risk": 95,
+      "explanation": "Rejected: \"Sunrise Coffee Co\" already got paid for this invoice number. Paying again would be a double payment.",
+      "hash": "0x94fad52aba092367e889dd6218a8ba81339db262a07a1e6f792c45d369c98f20",
+      "explorer": "https://explorer-test.qday.info/tx/0x94fad52aba092367e889dd6218a8ba81339db262a07a1e6f792c45d369c98f20"
+    },
+    {
+      "invoice": "INV-1003 $250",
+      "invoiceId": "0xbe6cb40bac83a1d55a581931d8c03f04775d6aa18683667edd0999afe0615a41",
+      "decision": "REJECT",
+      "reason": "OverCap",
+      "risk": 90,
+      "explanation": "Rejected: 0.25 tUSD8 is above the per-payment cap of 0.2 tUSD8.",
+      "hash": "0x1fd9c849a8ffada28afe16a5e47e61520e477700fac0f52e0363d778950985b1",
+      "explorer": "https://explorer-test.qday.info/tx/0x1fd9c849a8ffada28afe16a5e47e61520e477700fac0f52e0363d778950985b1"
+    }
+  ],
+  "receiptInv1002Verified": true,
+  "invoices": {
+    "a": {
+      "id": "0x4e8203ddf5e70fa83b225d30e5c45af78443ffc4d4a150e7eff0c1ee5c35eb0e",
+      "status": "Refunded",
+      "amount": "0.02499",
+      "refunded": "0.02499",
+      "paidBy": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "mandateId": "1",
+      "receipt": "0xadf23525fe835bbb7d436f4186842386b7d89f1ec80b37507de4f2fbe09f2dd1"
+    },
+    "b": {
+      "id": "0xe1ea77218d5b49b26494eb4c88b250f21c283d3b7190d32adcdfc1293b0c2c45",
+      "status": "Refunded",
+      "amount": "0.149",
+      "refunded": "0.149",
+      "paidBy": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "mandateId": "1",
+      "receipt": "0x5b28afe309cd7b21bab32124445ed4d46c26ff6790fa9d8b8602e26eae6e6d0e"
+    },
+    "c": {
+      "id": "0xc877091ac52cd186e9aad55143ad6a07e38f37f9b745c2a006d2bfe48d2e85cc",
+      "status": "Cancelled",
+      "amount": "0.02499",
+      "refunded": "0",
+      "paidBy": "0x0000000000000000000000000000000000000000",
+      "mandateId": "0",
+      "receipt": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "e": {
+      "id": "0xbe6cb40bac83a1d55a581931d8c03f04775d6aa18683667edd0999afe0615a41",
+      "status": "Cancelled",
+      "amount": "0.25",
+      "refunded": "0",
+      "paidBy": "0x0000000000000000000000000000000000000000",
+      "mandateId": "0",
+      "receipt": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "dInv": {
+      "id": "0xdd08140fbcf687eed18fc344ddd58942d06bac8f960d0889b3609c4eb0d0a0c5",
+      "status": "Refunded",
+      "amount": "0.05",
+      "refunded": "0.05",
+      "paidBy": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "mandateId": "0",
+      "receipt": "0x07f3e3d5473f12a619a3fa7abd7feb7a252b23f6c4dcb6ebb8a7128f0bf1a9b2"
+    }
+  },
+  "steps": [
+    {
+      "step": "merchant registers payee name",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x7ea48deaf1b9c1e3d65e7e7ff84a3e6f20fa8b8d4e7599ed78a59901705ddef4",
+      "block": 3499966,
+      "explorer": "https://explorer-test.qday.info/tx/0x7ea48deaf1b9c1e3d65e7e7ff84a3e6f20fa8b8d4e7599ed78a59901705ddef4"
+    },
+    {
+      "step": "attester verifies merchant name hash",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x8de4f14be0fb1de39ed7a95b49996867e0183a345d5ce892730e2143fa6f8df2",
+      "block": 3499973,
+      "explorer": "https://explorer-test.qday.info/tx/0x8de4f14be0fb1de39ed7a95b49996867e0183a345d5ce892730e2143fa6f8df2"
+    },
+    {
+      "step": "payer approves 0.3 tUSD8 to Kindly (exact, not unlimited)",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0xe45217ecab5291252c72137056108e3828dc579167a2d1af586617d141098ede",
+      "block": 3499979,
+      "explorer": "https://explorer-test.qday.info/tx/0xe45217ecab5291252c72137056108e3828dc579167a2d1af586617d141098ede"
+    },
+    {
+      "step": "payer creates mandate: cap $200, budget $500, usual $25, allowlist [Sunrise], verified-only",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x1fdd12fa4052dfc3fb7dc9dd868a1668c665966917ea5803c7eca1133f3ec2db",
+      "block": 3499982,
+      "explorer": "https://explorer-test.qday.info/tx/0x1fdd12fa4052dfc3fb7dc9dd868a1668c665966917ea5803c7eca1133f3ec2db"
+    },
+    {
+      "step": "merchant issues INV-1001 ($24.99 → 0.02499 tUSD8)",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0xc544bc348b318c676c57fd7093c7b376840f01262d8e1803ada0167e1f1219b6",
+      "block": 3499988,
+      "explorer": "https://explorer-test.qday.info/tx/0xc544bc348b318c676c57fd7093c7b376840f01262d8e1803ada0167e1f1219b6"
+    },
+    {
+      "step": "agent → Safety Gate: INV-1001 $24.99 ⇒ PAY (Ok, risk 19)",
+      "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+      "hash": "0x98784b2c6080f9aa7fbaa74c845c5baef6a8ff75997484fea355afb8ce824253",
+      "explorer": "https://explorer-test.qday.info/tx/0x98784b2c6080f9aa7fbaa74c845c5baef6a8ff75997484fea355afb8ce824253"
+    },
+    {
+      "step": "merchant issues INV-1002 ($149 → 0.149 tUSD8)",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x1d53e69ba7444066330d57bacee12551d5e03725b81d64a0f343945152c2084a",
+      "block": 3499999,
+      "explorer": "https://explorer-test.qday.info/tx/0x1d53e69ba7444066330d57bacee12551d5e03725b81d64a0f343945152c2084a"
+    },
+    {
+      "step": "agent → Safety Gate: INV-1002 $149 ⇒ HOLD (AmountAnomaly, risk 75)",
+      "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+      "hash": "0xd37ef58d52344b5d63b750f9197ae6095b28862f52581dbb8ac209a2d9495e6d",
+      "explorer": "https://explorer-test.qday.info/tx/0xd37ef58d52344b5d63b750f9197ae6095b28862f52581dbb8ac209a2d9495e6d"
+    },
+    {
+      "step": "payer approves held INV-1002 (explicit approval tx)",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x911fe816965c879ebc94f279e6be8c647dfd32a89243d2e0ad0aaaa0600e5f2f",
+      "block": 3500009,
+      "explorer": "https://explorer-test.qday.info/tx/0x911fe816965c879ebc94f279e6be8c647dfd32a89243d2e0ad0aaaa0600e5f2f"
+    },
+    {
+      "step": "merchant issues INV-1001 (re-sent) ($24.99 → 0.02499 tUSD8)",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x077a7d09105af1b68b61773201f3b5cc8d4d89a3257a33a361c670bfd8d8267a",
+      "block": 3500015,
+      "explorer": "https://explorer-test.qday.info/tx/0x077a7d09105af1b68b61773201f3b5cc8d4d89a3257a33a361c670bfd8d8267a"
+    },
+    {
+      "step": "agent → Safety Gate: INV-1001 re-sent $24.99 ⇒ REJECT (Duplicate, risk 95)",
+      "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+      "hash": "0x94fad52aba092367e889dd6218a8ba81339db262a07a1e6f792c45d369c98f20",
+      "explorer": "https://explorer-test.qday.info/tx/0x94fad52aba092367e889dd6218a8ba81339db262a07a1e6f792c45d369c98f20"
+    },
+    {
+      "step": "merchant issues INV-1003 ($250 → 0.25 tUSD8)",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x10e641e2cf831d2c62a5f624656807095237ec9e8c3157f09e9748d850e68374",
+      "block": 3500025,
+      "explorer": "https://explorer-test.qday.info/tx/0x10e641e2cf831d2c62a5f624656807095237ec9e8c3157f09e9748d850e68374"
+    },
+    {
+      "step": "agent → Safety Gate: INV-1003 $250 ⇒ REJECT (OverCap, risk 90)",
+      "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+      "hash": "0x1fd9c849a8ffada28afe16a5e47e61520e477700fac0f52e0363d778950985b1",
+      "explorer": "https://explorer-test.qday.info/tx/0x1fd9c849a8ffada28afe16a5e47e61520e477700fac0f52e0363d778950985b1"
+    },
+    {
+      "step": "control center: lower per-payment cap to $100",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0xf5aa3f567c8159f2f0eeace5e8bf422d9d2b42f3701b41c21500218612b201a6",
+      "block": 3500040,
+      "explorer": "https://explorer-test.qday.info/tx/0xf5aa3f567c8159f2f0eeace5e8bf422d9d2b42f3701b41c21500218612b201a6"
+    },
+    {
+      "step": "control center: freeze mandate",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0xf57a18c5e3b95c22b0e32573d6bf3d96716a77a9be843817c8e02174eb218200",
+      "block": 3500046,
+      "explorer": "https://explorer-test.qday.info/tx/0xf57a18c5e3b95c22b0e32573d6bf3d96716a77a9be843817c8e02174eb218200"
+    },
+    {
+      "step": "agent while frozen",
+      "blocked": "MandateIsFrozen",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "control center: unfreeze mandate",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x3798eb0c5aa37a57d77392030e6f0650b4a8880001e616fb691ac99640570fbb",
+      "block": 3500053,
+      "explorer": "https://explorer-test.qday.info/tx/0x3798eb0c5aa37a57d77392030e6f0650b4a8880001e616fb691ac99640570fbb"
+    },
+    {
+      "step": "control center: revoke mandate",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x7e415c40a993f71413ff56ea3b4eeb05d19cc538ebcc0ef5f48ef2ee58aa68d0",
+      "block": 3500059,
+      "explorer": "https://explorer-test.qday.info/tx/0x7e415c40a993f71413ff56ea3b4eeb05d19cc538ebcc0ef5f48ef2ee58aa68d0"
+    },
+    {
+      "step": "agent after revoke",
+      "blocked": "MandateInactive",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "merchant issues INV-2001 ($50 → 0.05 tUSD8)",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0xd8493e9a402975c465f794f067353a31f42c8dd77f3bf3992d0cfb27ba8c3d79",
+      "block": 3500062,
+      "explorer": "https://explorer-test.qday.info/tx/0xd8493e9a402975c465f794f067353a31f42c8dd77f3bf3992d0cfb27ba8c3d79"
+    },
+    {
+      "step": "payer pays look-alike name 'Sunrise Cofee Co'",
+      "blocked": "PayeeMismatch",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "payer pays with tampered max amount",
+      "blocked": "AmountAboveMax",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "payer pays INV-2001 directly with CoP name pin",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x59e8da67b67f98ca25fb88ca0b8d1a8940a04c745f2047321e3648305ec86250",
+      "block": 3500069,
+      "explorer": "https://explorer-test.qday.info/tx/0x59e8da67b67f98ca25fb88ca0b8d1a8940a04c745f2047321e3648305ec86250"
+    },
+    {
+      "step": "double payment of INV-2001",
+      "blocked": "InvoiceNotOpen",
+      "note": "rejected in pre-flight simulation, no tx sent"
+    },
+    {
+      "step": "merchant approves 0.22399 tUSD8 for refunds",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x0eab60b5bfdaf409234564ae86e10ac2470fcb0cebebc231a13d634e0c3b0aeb",
+      "block": 3500076,
+      "explorer": "https://explorer-test.qday.info/tx/0x0eab60b5bfdaf409234564ae86e10ac2470fcb0cebebc231a13d634e0c3b0aeb"
+    },
+    {
+      "step": "merchant refunds INV-1001 in full",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x07b1466f0e3b686980b2357f68f2722ff5e5c0413e6938bbb8260816c43bd7de",
+      "block": 3500082,
+      "explorer": "https://explorer-test.qday.info/tx/0x07b1466f0e3b686980b2357f68f2722ff5e5c0413e6938bbb8260816c43bd7de"
+    },
+    {
+      "step": "merchant refunds INV-1002 in full",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x538e436a00813b1bbc9a0ef7a1010db9af9961d0389657164cd845a1f9c9e212",
+      "block": 3500085,
+      "explorer": "https://explorer-test.qday.info/tx/0x538e436a00813b1bbc9a0ef7a1010db9af9961d0389657164cd845a1f9c9e212"
+    },
+    {
+      "step": "merchant refunds INV-2001 in full",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0xedfa4a4e67cb9c42b96064d225a1eb7d8bd64da5538891ee24544a3136f47a15",
+      "block": 3500091,
+      "explorer": "https://explorer-test.qday.info/tx/0xedfa4a4e67cb9c42b96064d225a1eb7d8bd64da5538891ee24544a3136f47a15"
+    },
+    {
+      "step": "merchant cancels re-sent INV-1001",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x5fa4dc3c9f6a55e30dd60b45f91d3425e9f84dad3def7a04471a8593318b47e5",
+      "block": 3500098,
+      "explorer": "https://explorer-test.qday.info/tx/0x5fa4dc3c9f6a55e30dd60b45f91d3425e9f84dad3def7a04471a8593318b47e5"
+    },
+    {
+      "step": "merchant cancels INV-1003",
+      "from": "0xb7A4089A4E22E3128D7d5e0EED8E60366Df4ea56",
+      "hash": "0x2067a3dc2ffbf0190875fc729a4cf6ad5958f4b22ad4dceae44ebab5548bd18c",
+      "block": 3500104,
+      "explorer": "https://explorer-test.qday.info/tx/0x2067a3dc2ffbf0190875fc729a4cf6ad5958f4b22ad4dceae44ebab5548bd18c"
+    }
+  ],
+  "finishedAt": "2026-11-18T14:57:34.484Z"
+}

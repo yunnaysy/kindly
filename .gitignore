@@ -1,0 +1,14 @@
+DEPLOYER_SECRET.txt
+*SECRET*
+.env
+.env.*
+!.env.example
+node_modules/
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+web/dist/
+agent/state.json
+contracts/lib/
+DEPLOYER_ADDRESS.txt
+agent/agent.config.json

@@ -1,0 +1,28 @@
+{
+  "name": "kindly-aevum",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kindly — Payments, taken care of. Stablecoin invoices with an on-chain Invoice Safety Gate (PAY/HOLD/REJECT) for AI assistants, on QDay Aevum Testnet",
+  "license": "MIT",
+  "scripts": {
+    "deps:contracts": "cd contracts && forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts@v5.1.0 --no-git",
+    "build:contracts": "cd contracts && forge build && cd .. && node scripts/export-abi.mjs",
+    "test:contracts": "cd contracts && forge test -vv",
+    "test:js": "node --test agent/*.test.mjs",
+    "test": "npm run test:contracts && npm run test:js",
+    "deploy": "node scripts/deploy.mjs",
+    "e2e": "node scripts/e2e.mjs",
+    "agent": "node agent/agent.mjs",
+    "dev": "vite web",
+    "build:web": "vite build web",
+    "preview": "vite preview web"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

@@ -7,7 +7,7 @@
     <meta name="description" content="Your AI agent can pay invoices for you. Kindly makes sure every payment is verified, within your rules, and safe to approve. Live on QDay Aevum Testnet." />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://rpc-test.qday.info wss://rpc-test.qday.info http://127.0.0.1:8545 http://localhost:8545 ws://localhost:5173; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="theme-color" content="#FFFFFF" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -16,17 +16,24 @@
     <meta name="application-name" content="Kindly" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kindly · Payments, handled. Safely." />
+    <meta property="og:description" content="Your AI agent pays invoices inside an allowance you set. Every payment is checked on-chain. Testnet only." />
+    <meta property="og:url" content="https://kindly-lemon.vercel.app/" />
+    <meta property="og:image" content="https://kindly-lemon.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" href="./fonts/satoshi-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./fonts/satoshi-700.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./fonts/fonts.css" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='10' fill='%23302E2B'/><path d='M16 6l8 3.4v5.7c0 5.2-3.4 9.5-8 11.3-4.6-1.8-8-6.1-8-11.3V9.4z' fill='none' stroke='%23F8F6F1' stroke-width='2' stroke-linejoin='round'/><circle cx='16' cy='13' r='1.8' fill='%23F8F6F1'/><circle cx='12.6' cy='18.4' r='1.8' fill='%23F8F6F1'/><circle cx='19.4' cy='18.4' r='1.8' fill='%23F8F6F1'/></svg>" />
   </head>
   <body>
     <a class="skip" href="#app">Skip to content</a>
     <div class="shell">
       <aside class="side" id="side">
         <div class="side-head">
-        <a class="brand" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/></svg></span><span class="brand-word">kindly</span></a>
+        <a class="brand" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="200 120 624 784"><path d="M232 340 L252 168 Q258 132 290 152 L408 246 Q512 222 616 246 L734 152 Q766 132 772 168 L792 340 L792 500 Q786 700 512 884 Q238 700 232 500 Z"/><ellipse class="eye" cx="420" cy="470" rx="38" ry="48"/><ellipse class="eye" cx="604" cy="470" rx="38" ry="48"/><path class="nose" d="M482 560 Q512 540 542 560 Q512 600 482 560 Z"/></svg></span><span class="brand-word">kindly</span></a>
         <button type="button" id="sideToggle" class="side-toggle" aria-controls="side" aria-expanded="true" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.5 4.5v15"/></svg></button>
         </div>
         <nav id="nav" aria-label="Main">
@@ -50,7 +57,7 @@
       <div class="main-col">
         <header class="top">
           <div class="top-inner">
-            <a class="brand brand-m" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><circle cx="12" cy="9.2" r="1.5"/><circle cx="8.9" cy="14.2" r="1.5"/><circle cx="15.1" cy="14.2" r="1.5"/><path d="M11.2 10.5l-1.5 2.4M12.8 10.5l1.5 2.4M10.4 14.2h3.2"/></svg></span><span class="brand-word">kindly</span></a>
+            <a class="brand brand-m" href="#/" aria-label="Kindly home" translate="no"><span class="mark" aria-hidden="true"><svg viewBox="200 120 624 784"><path d="M232 340 L252 168 Q258 132 290 152 L408 246 Q512 222 616 246 L734 152 Q766 132 772 168 L792 340 L792 500 Q786 700 512 884 Q238 700 232 500 Z"/><ellipse class="eye" cx="420" cy="470" rx="38" ry="48"/><ellipse class="eye" cx="604" cy="470" rx="38" ry="48"/><path class="nose" d="M482 560 Q512 540 542 560 Q512 600 482 560 Z"/></svg></span><span class="brand-word">kindly</span></a>
             <span class="appbar-title" aria-hidden="true">Kindly</span>
             <div class="wallet">
               <button type="button" id="net" class="net" aria-haspopup="dialog">Connecting…</button>

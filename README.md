@@ -10,7 +10,7 @@ The gate is a set of **fixed, deterministic contract rules**, not an AI model. T
 
 | | |
 |---|---|
-| ![Guided demo: the $149 payment is held](docs/screenshots/mobile-judge-hold.png) | ![Home: one payment needs you](docs/screenshots/mobile-home-connected.png) |
+| ![Home: one payment needs you, allowance left](docs/screenshots/v2-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v2-mobile-review-confirm.png) |
 
 **Demo video:** [docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:02, English voiceover and captions, recorded from the live site in no-wallet replay mode).
 
@@ -36,7 +36,7 @@ The entry screen offers three paths, and a badge at the top of every screen says
 |---|---|---|
 | **Connect wallet · Try live** | MetaMask on Aevum Testnet. Real transactions, real gas (tQDAY). | `LIVE TESTNET` (warns if you are on the wrong network) |
 | **Explore demo without wallet** | A guided replay of a real recorded run on Aevum. Every link opens a real transaction; nothing is sent. | `DEMO MODE` |
-| **Watch the 60-second walkthrough** | The in-app link opens the written [60-second demo](#60-second-demo) below. A recorded demo video is in `docs/video/`. | |
+| **Watch the 2-minute walkthrough** | The in-app link opens the recorded demo video ([docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4)). The written [60-second demo](#60-second-demo) is below. | |
 
 On a local Anvil chain the badge reads `LOCAL REHEARSAL · private test chain · not real data`, so screenshots from a rehearsal can't be mistaken for testnet data.
 
@@ -185,12 +185,14 @@ Final mandate state: spent 0.02499 of 0.5 tUSD8, cap lowered to 0.1, revoked. Re
 
 ## Screenshots
 
+White-first redesign (Nov 2026): a cat + shield mark, four tabs (Home · Activity · Wallet · Settings), technical details behind "Details", and a deliberate confirmation step before you sign an approval.
+
 | | |
 |---|---|
-| ![Welcome](docs/screenshots/mobile-welcome.png) Entry: three paths and the mode badge | ![Guided demo hold](docs/screenshots/mobile-judge-hold.png) Guided demo: the held payment and why |
-| ![Home](docs/screenshots/mobile-home-connected.png) Home: what needs you, then your agent's spending rules | ![Network sheet](docs/screenshots/mobile-network-sheet.png) Network pill: name, chain ID, testnet note |
-| ![Hold review](docs/screenshots/mobile-hold-review.png) Review a held payment | ![Settings](docs/screenshots/mobile-settings.png) Settings: freeze state, learn, glossary |
-| ![Desktop judge](docs/screenshots/desktop-judge-live-hold.png) Desktop: guided demo, live on the chain | ![Desktop home](docs/screenshots/desktop-home.png) Desktop: Home with security status |
+| ![Home](docs/screenshots/v2-mobile-home.png) Home: the held payment first, then allowance left, Freeze and recent items | ![Review](docs/screenshots/v2-mobile-review.png) Review: merchant, amount, why it was held, usual amount, mandate used and safety rule |
+| ![Confirm](docs/screenshots/v2-mobile-review-confirm.png) Approving needs a ticked check and "Confirm and sign" | ![Activity](docs/screenshots/v2-mobile-activity-held.png) Activity: All / Paid / Held / Rejected; tap a row for the tx hash, contract and checks |
+| ![Wallet](docs/screenshots/v2-mobile-wallet.png) Wallet: connected wallet, allowance, network & token, mandates | ![Settings](docs/screenshots/v2-mobile-settings.png) Settings: Wallet / Safety / Preferences / About |
+| ![Desktop home](docs/screenshots/v2-desktop-home.png) Desktop Home | ![Icons](docs/screenshots/icons-homescreen-mockup.png) App icon on a home screen |
 
 (Screenshots come from a local Anvil rehearsal of the same build, so they show the `LOCAL REHEARSAL` badge, except the replay shots, which use the recorded Aevum run.)
 
@@ -203,11 +205,11 @@ Kindly looks and behaves like a native app on a phone, without an APK. Open http
 
 | Phone | Phone | Phone | Phone |
 |---|---|---|---|
-| ![Home](docs/screenshots/mobile-home.png) | ![Wallet](docs/screenshots/mobile-wallet.png) | ![Hold review](docs/screenshots/mobile-hold-review.png) | ![Settings](docs/screenshots/mobile-settings.png) |
+| ![Home](docs/screenshots/v2-mobile-home.png) | ![Wallet](docs/screenshots/v2-mobile-wallet.png) | ![Hold review](docs/screenshots/v2-mobile-review.png) | ![Settings](docs/screenshots/v2-mobile-settings.png) |
 
 | Desktop | Tablet |
 |---|---|
-| ![Desktop home](docs/screenshots/desktop-payments.png) | ![Tablet](docs/screenshots/tablet-payments.png) |
+| ![Desktop home](docs/screenshots/v2-desktop-home.png) | ![Tablet](docs/screenshots/v2-tablet-home.png) |
 
 ## Architecture
 

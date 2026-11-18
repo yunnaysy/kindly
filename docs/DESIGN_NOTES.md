@@ -4,6 +4,21 @@
 
 The primary spec came from a ChatGPT critique of the old UI (summarized below). It was blended with patterns from eight X posts the user shared.
 
+
+## Redesign v2: white-first (Nov 2026) — current
+
+This section supersedes the palette and layout above where they conflict. Source: a second ChatGPT critique ("simple but useful").
+
+- **Look:** white-first. Canvas `#FAFAFC`, cards `#FFFFFF`, ink `#1F1E24`, muted `#62616E`, border `#ECECF1`. Pastels are used sparingly for tints only: pink, lavender (`--lav-soft`), peach, mint, butter. Primary accent coral `#E26D8F` with `#B13D62` for text and buttons (AA). The AI/agent colour is `#5A51B0` on `#EEEBFD`.
+- **Brand mark:** a minimal cat face shaped like a shield (dark `#2B2A33`, white eyes, pink nose) on a lavender tile. It reads at 32px. Masters are in `docs/brand/`; the favicon, PWA icons (192/512/maskable), apple-touch icon and OG image are generated from them.
+- **Navigation:** Home · Activity · Wallet · Settings.
+- **Home** answers "am I OK?" in about 5 seconds: a held payment first (if any), then **Allowance left** (a big number plus a progress bar) with **Freeze**, three small metric cards (max per payment, spent so far, needs you) and the 3 most recent items. Spending rules sit behind "Spending rules & details".
+- **Activity:** segmented filters All / Paid / Held / Rejected, with counts. Tap a row to see the security checks plus technical details (tx hash, contract, block). Invoices, pay-a-link and receipt verification sit below.
+- **Wallet:** Connected wallet (official MetaMask fox only), Allowance / Funds protection, Network & token (chain ID and addresses behind "Details"), Mandates. On desktop it is one readable column (max 900px).
+- **Settings:** Wallet / Safety (Allowance & mandates, Freeze, Funds protection) / Preferences (Notifications — push is *coming soon*, Privacy & security) / About (About Kindly, Testnet information).
+- **Payment review:** merchant, amount, why it was held, how it compares with the usual amount, the mandate used and the safety rule. **Approve** opens a confirmation box: a summary, a required checkbox ("I checked the merchant and the amount"), then **Confirm and sign**. Approval is never a single casual tap.
+- Every page has empty, loading and error states. The testnet badge is always visible, and nothing hides behind the bottom nav.
+
 ## Palette
 
 | Token | Hex | Use |

@@ -1,5 +1,5 @@
 {
-  "name": "Kindly · Payments, handled. Safely.",
+  "name": "Kindly \u00b7 Payments, handled. Safely.",
   "short_name": "Kindly",
   "description": "Let your AI agent pay invoices within a bounded allowance. Every payment passes an on-chain Safety Gate. Testnet only.",
   "id": "./",
@@ -7,12 +7,30 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F7F6F3",
-  "theme_color": "#F7F6F3",
-  "categories": ["finance", "productivity"],
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "categories": [
+    "finance",
+    "productivity"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

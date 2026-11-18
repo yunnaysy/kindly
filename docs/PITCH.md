@@ -22,6 +22,6 @@ Live on QDay Aevum Testnet with tUSD8 (scaled 1:1000). The recorded guided-demo 
 
 - No AI model ships in this repo. The included agent is a script; a real AI agent would plug in at the same point, with the same limited authority. Explanations are templates.
 - Testnet only, unaudited contracts.
-- No video walkthrough yet; the [60-second demo](../README.md#60-second-demo) is written.
+- Demo video: `docs/video/` (recorded from the live site, replay mode). The [60-second demo](../README.md#60-second-demo) is also written out.
 
 **Ask.** Open the app, choose **Explore demo without wallet**, and watch one payment pass and one wait for you. About a minute.

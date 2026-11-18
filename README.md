@@ -12,6 +12,8 @@ The gate is a set of **fixed, deterministic contract rules**, not an AI model. T
 |---|---|
 | ![Guided demo: the $149 payment is held](docs/screenshots/mobile-judge-hold.png) | ![Home: one payment needs you](docs/screenshots/mobile-home-connected.png) |
 
+**Demo video:** [docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:02, English voiceover and captions, recorded from the live site in no-wallet replay mode).
+
 Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md) · Pitch: [docs/PITCH.md](docs/PITCH.md)
 
 ## How it works
@@ -34,7 +36,7 @@ The entry screen offers three paths, and a badge at the top of every screen says
 |---|---|---|
 | **Connect wallet · Try live** | MetaMask on Aevum Testnet. Real transactions, real gas (tQDAY). | `LIVE TESTNET` (warns if you are on the wrong network) |
 | **Explore demo without wallet** | A guided replay of a real recorded run on Aevum. Every link opens a real transaction; nothing is sent. | `DEMO MODE` |
-| **Watch the 60-second walkthrough** | There is no video yet. The link opens the written [60-second demo](#60-second-demo) below. | |
+| **Watch the 60-second walkthrough** | The in-app link opens the written [60-second demo](#60-second-demo) below. A recorded demo video is in `docs/video/`. | |
 
 On a local Anvil chain the badge reads `LOCAL REHEARSAL · private test chain · not real data`, so screenshots from a rehearsal can't be mistaken for testnet data.
 

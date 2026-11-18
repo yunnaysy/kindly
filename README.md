@@ -1,16 +1,69 @@
 # Kindly
 
-**Payments, taken care of.**
+> **AI should be able to pay for you — but it should never have unlimited permission to spend your money.**
 
-Kindly lets small businesses send stablecoin invoices as a link or QR code, and lets an AI assistant pay your bills, but only through an **on-chain Invoice Safety Gate**. For every invoice, the gate decides **PAY**, **HOLD** or **REJECT** and records the reason and a risk score as an event anyone can verify. The AI never decides. It only *explains* the contract's decision in plain English.
+Kindly is a spending-rules layer for payment agents on **QDay Aevum Testnet** (chain `44005`, test stablecoin **tUSD8**). You give an agent a **bounded allowance** and a set of spending rules (max per payment, total budget, usual payment, allowed merchants, expiry). Every payment the agent attempts goes through an **on-chain Safety Gate** that returns **PAY**, **HOLD** or **REJECT** with a reason code. A HOLD waits for *your* signature. Funds stay in your wallet outside the allowance.
 
-Built for **Aevum Builder Challenge #1** on **QDay Aevum Testnet** (chain `44005`), using the official test stablecoin **tUSD8**.
+The gate is a set of **fixed, deterministic contract rules**, not an AI model. The same invoice always gets the same verdict, and anyone can re-check it from the event log. The agent in this repo (`agent/agent.mjs`) is a small scripted stand-in for an AI agent; the plain-English explanations are templates.
 
-**Live demo:** [https://kindly-lemon.vercel.app](https://kindly-lemon.vercel.app)
+**Live app:** [https://kindly-lemon.vercel.app](https://kindly-lemon.vercel.app) · no sign-up, no email, no password: just a wallet, or no wallet at all for the demo.
 
-![Run demo: three invoices, three decisions](docs/screenshots/02-demo-complete.png)
+| | |
+|---|---|
+| ![Guided demo: the $149 payment is held](docs/screenshots/mobile-judge-hold.png) | ![Home: one payment needs you](docs/screenshots/mobile-home-connected.png) |
 
-Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md)
+Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md) · Pitch: [docs/PITCH.md](docs/PITCH.md)
+
+## How it works
+
+```mermaid
+flowchart LR
+  A[Agent<br/>proposes a payment] --> G{Safety Gate<br/>Kindly.sol · deterministic rules}
+  G -->|checks| M[(Mandate<br/>your spending rules)]
+  G -->|PAY| P[Payment<br/>exact amount via transferFrom]
+  G -->|HOLD| H[Held · waits for you] -->|approveHold| P
+  H -->|rejectHold| X[Nothing moves]
+  G -->|REJECT| X
+```
+
+## Three ways in
+
+The entry screen offers three paths, and a badge at the top of every screen says which mode you are in:
+
+| Path | What happens | Mode badge |
+|---|---|---|
+| **Connect wallet · Try live** | MetaMask on Aevum Testnet. Real transactions, real gas (tQDAY). | `LIVE TESTNET` (warns if you are on the wrong network) |
+| **Explore demo without wallet** | A guided replay of a real recorded run on Aevum. Every link opens a real transaction; nothing is sent. | `DEMO MODE` |
+| **Watch the 60-second walkthrough** | There is no video yet. The link opens the written [60-second demo](#60-second-demo) below. | |
+
+On a local Anvil chain the badge reads `LOCAL REHEARSAL · private test chain · not real data`, so screenshots from a rehearsal can't be mistaken for testnet data.
+
+## 60-second demo
+
+1. **0:00 · Open** [kindly-lemon.vercel.app](https://kindly-lemon.vercel.app) and choose **Explore demo without wallet** (or Settings → Guided demo). The badge says `DEMO MODE`.
+2. **0:10 · Rules.** "Your agent's spending rules": max $200 per payment, $500 budget, usual payment $25, one allowed café. Funds stay in your wallet outside the allowance.
+3. **0:20 · Scenario 1.** The agent pays a normal $24.99 invoice. The gate returns **PAY** (`Ok`); the transaction link opens on the Aevum explorer.
+4. **0:30 · Scenario 2.** The agent tries $149 at the same café. The gate returns **HOLD** (`AmountAnomaly`, 6.0× the usual payment; holds start at 3×). The amber card says: *The payment is paused. Your agent cannot proceed without your decision.* Open **Why was this held?** to see the values the rule used.
+5. **0:40 · You decide.** Tap **Approve** (the payment settles, the allowance drops) or **Reject** (nothing is paid).
+6. **0:50 · Proof.** The proof table lists every transaction of the run. With a wallet connected, switch to **Live on testnet** and the same two scenarios run for real with a fresh throwaway café (about 5 confirmations, 0.17399 tUSD8 that is refunded at the end).
+
+## Proof: the recorded guided-demo run on Aevum
+
+Recorded by `npm run judge` (`scripts/judge.mjs`) on 2026-11-19 against the deployed contracts; full record in [deployments/judge-44005.json](deployments/judge-44005.json). Amounts are scaled 1:1000 (see [Scale note](#scale-note)).
+
+| Step | Result | Transaction |
+|---|---|---|
+| Café registers its name, attester verifies it | verified payee | [`0x87fa6f11…`](https://explorer-test.qday.info/tx/0x87fa6f1109c90d95e3684984dca7c10aab4e340eaf434365294717424cb9a7cb) · [`0xba23ecc2…`](https://explorer-test.qday.info/tx/0xba23ecc22dfc4019880a6745488e236cf9d93d88514a4db7cf662c8cd8456247) |
+| Payer allows exactly 0.32299 tUSD8 (bounded allowance) | allowance set | [`0x2a84d999…`](https://explorer-test.qday.info/tx/0x2a84d9994d2a0a9cb0c8c346fa494615e852e0473f3d63c9ff1011befe4e9066) |
+| Payer sets the spending rules (mandate #3) | rules active | [`0x86291c2e…`](https://explorer-test.qday.info/tx/0x86291c2e2b91ed9cd501d64e98471f8ad19b92c989fdc54c4daac445a60e24d4) |
+| Agent → gate: INV-J1 $24.99 | **PAY** · `Ok` | [`0xc81f404b…`](https://explorer-test.qday.info/tx/0xc81f404b6e98df6319732a5e59d9df6a29132cc03bab5e29c63419e0220f61b7) |
+| Agent → gate: INV-J3 $149 | **HOLD** · `AmountAnomaly` | [`0x4ebd6479…`](https://explorer-test.qday.info/tx/0x4ebd64792432457b727aa9f81f3fff57ffeafe57bb7e1ab4249914f064f06a6e) |
+| Owner rejects INV-J3 | nothing paid | [`0x72d35493…`](https://explorer-test.qday.info/tx/0x72d354931a159cc549cdf6fb679b69d29127e045c0bea30ec99c14ffb769fb03) |
+| Agent → gate: INV-J2 $149 | **HOLD** · `AmountAnomaly` | [`0x67774622…`](https://explorer-test.qday.info/tx/0x67774622cce850b23fd3132e119582967e0428fec1b76e4c1cbacb1e74b08b51) |
+| Owner approves INV-J2 | paid, allowance 0.298 → 0.149 | [`0x8ae0f976…`](https://explorer-test.qday.info/tx/0x8ae0f97602756c3b0c76bfde9744be8cc2b7f899dce11dbd473f24680868781f) |
+| Cleanup: refunds, cancel INV-J3, revoke mandate, allowance back to 0 | balances restored | [`0xadd1e11f…`](https://explorer-test.qday.info/tx/0xadd1e11fc84d836709efa50e117b3115b591772ff1b12ec4c551beee13342451) · [`0x1a07cd2c…`](https://explorer-test.qday.info/tx/0x1a07cd2c5e9b33577a61404d541c0ac0336de4cd97dc388825569cf588be3005) · [`0x5a22225e…`](https://explorer-test.qday.info/tx/0x5a22225e7303369854ee629b78eaa4cb3990958207d67ed8dfa3d153db173b59) · [`0x9ef20b36…`](https://explorer-test.qday.info/tx/0x9ef20b3634434970e1b2cf8e187b1454076a1b5330dbcd25768fe006960a9b9d) |
+
+The guided demo's replay mode plays back exactly these transactions (`web/src/judge-runs.json`).
 
 ## The problem
 
@@ -19,17 +72,17 @@ AI agents are starting to pay bills. The two most common ways small businesses l
 - **Invoice fraud and payee swaps.** Someone sends a look-alike invoice ("Sunrise Cofee Co") or swaps the address in a payment link.
 - **Duplicates and anomalies.** The same invoice gets paid twice, or a bill is suddenly 6× the usual.
 
-Hard spending limits alone don't fix this. A $149 fake invoice sits well under a $200 cap. A useful agent wallet needs judgement that is **deterministic, auditable and enforced by the contract**, plus a human in the loop for anything odd.
+Hard spending limits alone don't fix this. A $149 fake invoice sits well under a $200 cap. An agent wallet also needs rules that are **deterministic, auditable and enforced by the contract**, plus a human in the loop for anything odd.
 
 ## What Kindly does
 
 | | |
 |---|---|
-| 🛡️ **Invoice Safety Gate** | `agentProcess()` evaluates each invoice on-chain and emits `SafetyDecision(decision, reason, risk, amount, usualAmount)`. PAY settles immediately. HOLD parks the invoice until **you** sign `approveHold`. REJECT moves nothing. |
-| 🎛️ **Live Mandate Control Center** | Change the cap, budget, usual amount, expiry and cooldown, add or remove allowed merchants, **freeze/unfreeze** or **revoke** your assistant in one tap, and watch the remaining budget update live. Includes a queue of held invoices and a feed of recent gate decisions. |
-| ▶️ **One-click RUN DEMO** | A demo café sends three invoices: **$24.99 → PAY**, **$149 → HOLD** (you approve it), **$24.99 with the same invoice number → REJECT**. Every step links to its transaction. Funds are refunded at the end, so the demo is repeatable. |
-| 🔗 **Links, QR and Confirmation of Payee** | Merchants register a name, and an attester verifies it (on-chain *Confirmation of Payee*). Payers see a green ✓ only when the name they expect matches. The contract re-checks the name hash and the maximum amount, so a swapped link or a renamed merchant can't take the payment. |
-| 🧾 **Verifiable receipts and refunds** | Every payment gets a receipt hash you can verify on the Receipts page. Merchants can refund fully or partially. |
+| **Safety Gate** | `agentProcess()` evaluates each invoice on-chain and emits `SafetyDecision(decision, reason, risk, amount, usualAmount)`. PAY settles immediately. HOLD parks the invoice until **you** sign `approveHold` (or `rejectHold`). REJECT moves nothing. |
+| **Spending rules (mandate)** | Max per payment, total budget, usual payment, allowed merchants, expiry and cooldown. Freeze or revoke the agent in one tap. |
+| **Guided demo** | Scenario 1 pays automatically, Scenario 2 is held and you approve or reject it, then the proof. Live with a wallet, or a labelled replay of recorded transactions without one. |
+| **Links, QR and Confirmation of Payee** | Merchants register a name and an attester verifies it. The contract re-checks the name hash and the maximum amount, so a swapped link or a renamed merchant can't take the payment. |
+| **Receipts and refunds** | Every payment gets a receipt hash you can verify on the Receipts page. Merchants can refund fully or partially. |
 
 ### Safety Gate rules
 
@@ -62,9 +115,9 @@ Duplicates are tracked per *(payer, merchant, invoice number)*. A merchant can r
 
 ### Who decides what
 
-- **The contract decides.** `evaluate()` is a free `view` call, so the UI and the agent can preview a decision. `agentProcess()` makes the binding decision and emits it.
-- **A human approves holds.** Only the mandate owner can call `approveHold` or `rejectHold`. Approval re-checks duplicates and the payee name. A held payment that the owner approves is the owner's own payment, so it doesn't use up the assistant's budget.
-- **The AI only explains.** `explainDecision()` in `shared/kindly.js` turns `(decision, reason, risk, amount, usual)` into one friendly sentence. It has no keys and no say. Invoice memos are treated as untrusted text: they're sanitized, shown, and never interpreted. In the e2e run, INV-1003 carries an injection attempt in its memo and is still rejected as `OverCap`.
+- **The contract decides.** `evaluate()` is a free `view` call, so the UI and the agent can preview a decision. `agentProcess()` makes the binding decision and emits it. These are fixed rules; no AI model is involved.
+- **You approve holds.** Only the mandate owner can call `approveHold` or `rejectHold`. Approval re-checks duplicates and the payee name. An approved hold is the owner's own payment, so it doesn't use up the agent's budget. A rejected hold changes nothing.
+- **Explanations are templates.** `explainDecision()` in `shared/kindly.js` turns `(decision, reason, risk, amount, usual)` into one sentence. It has no keys and no say. Invoice memos are treated as untrusted text: they're sanitized, shown, and never interpreted. In the e2e run, INV-1003 carries an injection attempt in its memo and is still rejected as `OverCap`.
 
 ## Deployed on Aevum Testnet
 
@@ -132,15 +185,12 @@ Final mandate state: spent 0.02499 of 0.5 tUSD8, cap lowered to 0.1, revoked. Re
 
 | | |
 |---|---|
-| ![Home](docs/screenshots/01-home.png) Home | ![Hold waiting](docs/screenshots/03-demo-hold-waiting.png) RUN DEMO: the $149 invoice waits for you |
-| ![Control Center](docs/screenshots/04-control-center.png) Dashboard: agent status, wallet balance, funds & recovery path | ![Frozen](docs/screenshots/05-control-frozen.png) One tap to freeze |
-| ![Merchant](docs/screenshots/06-merchant-invoice-qr.png) Merchant: invoice link + QR | ![Pay](docs/screenshots/07-pay-cop-verified.png) Pay page: Confirmation of Payee |
-| ![Paid](docs/screenshots/08-paid-receipt.png) Paid, with receipt | ![Receipts](docs/screenshots/09-receipts.png) Receipts and settlements |
-| ![Funds](docs/screenshots/12-funds-modal.png) How your funds are protected | ![Mobile](docs/screenshots/10-mobile-home.png) Mobile |
-| ![Setup: allowance](docs/screenshots/16-start-allowance.png) Get started, step 1: a bounded spending allowance, never a deposit | ![Setup: activated](docs/screenshots/18-start-activated.png) Step 3: the mandate is active |
-| ![Needs you](docs/screenshots/13-dashboard-needs-you.png) Dashboard: one payment needs you | ![HOLD review](docs/screenshots/14-hold-review.png) HOLD review: the reason comes first |
+| ![Welcome](docs/screenshots/mobile-welcome.png) Entry: three paths and the mode badge | ![Guided demo hold](docs/screenshots/mobile-judge-hold.png) Guided demo: the held payment and why |
+| ![Home](docs/screenshots/mobile-home-connected.png) Home: what needs you, then your agent's spending rules | ![Network sheet](docs/screenshots/mobile-network-sheet.png) Network pill: name, chain ID, testnet note |
+| ![Hold review](docs/screenshots/mobile-hold-review.png) Review a held payment | ![Settings](docs/screenshots/mobile-settings.png) Settings: freeze state, learn, glossary |
+| ![Desktop judge](docs/screenshots/desktop-judge-live-hold.png) Desktop: guided demo, live on the chain | ![Desktop home](docs/screenshots/desktop-home.png) Desktop: Home with security status |
 
-(Screenshots come from a local Anvil run of the same build.)
+(Screenshots come from a local Anvil rehearsal of the same build, so they show the `LOCAL REHEARSAL` badge, except the replay shots, which use the recorded Aevum run.)
 
 ## Installable on phones (PWA)
 
@@ -160,7 +210,7 @@ Kindly looks and behaves like a native app on a phone, without an APK. Open http
 ## Architecture
 
 ```
- Merchant (browser)            Payer (browser)                 AI assistant (agent.mjs or RUN DEMO)
+ Merchant (browser)            Payer (browser)                 Agent (agent.mjs or guided demo)
    │ register name               │ pay link / QR                   │ evaluate() preview → explainDecision()
    │ createInvoice / refund      │ CoP check → payInvoice()        │ agentProcess(mandate, invoice, expectedName)
    ▼                             ▼                                 ▼
@@ -183,10 +233,10 @@ Kindly looks and behaves like a native app on a phone, without an APK. Open http
 ## Repository layout
 
 ```
-contracts/   Foundry: Kindly.sol (invoices, Safety Gate, mandates, holds, receipts), PayeeRegistry.sol, MockUSD8.sol (local only), 28 tests incl. 2 fuzz
+contracts/   Foundry: Kindly.sol (invoices, Safety Gate, mandates, holds, receipts), PayeeRegistry.sol, MockUSD8.sol (local only), 32 tests incl. 2 fuzz
 shared/      chain config (Aevum 44005, tUSD8), ABIs, helpers: decision/reason codes, explainDecision, sanitizer, error messages
-agent/       AI assistant runner (agent.mjs): preview → explain → agentProcess, idempotent, retries, + 15 unit tests
-scripts/     deploy.mjs, e2e.mjs (full on-chain flow, records every tx hash), export-abi.mjs
+agent/       scripted agent runner (agent.mjs, no AI model): preview → explain → agentProcess, idempotent, retries, + 15 unit tests
+scripts/     deploy.mjs, e2e.mjs (full on-chain flow, records every tx hash), judge.mjs (records the guided-demo run), export-abi.mjs
 web/         static dApp (Vite, vanilla JS + viem + qrcode): Run demo, Control Center, Merchant, Pay, Receipts
 deployments/ deployed addresses, e2e reports per chain, deployment history
 docs/        pitch, demo script, screenshots
@@ -198,10 +248,11 @@ Dockerfile   packaged demo (nginx serving the built web app)
 Requirements: Node ≥ 18, [Foundry](https://getfoundry.sh).
 
 ```bash
+git clone https://github.com/yunnaysy/kindly.git && cd kindly
 npm install
 npm run deps:contracts      # forge-std + OpenZeppelin v5.1.0 into contracts/lib
 npm run build:contracts     # forge build + export ABIs to shared/abi
-npm test                    # 28 Solidity tests (incl. fuzz) + 15 agent/helper tests
+npm test                    # 32 Solidity tests (incl. fuzz) + 15 agent/helper tests
 ```
 
 ### Run everything locally (no faucet needed)
@@ -209,7 +260,7 @@ npm test                    # 28 Solidity tests (incl. fuzz) + 15 agent/helper t
 ```bash
 anvil &                                     # local chain 31337
 CHAIN_ID=31337 REDEPLOY=1 npm run e2e       # deploys MockUSD8 + contracts, runs the full flow
-npm run dev                                 # open http://localhost:5173/?chain=31337#/demo and press RUN DEMO
+npm run dev                                 # open http://localhost:5173/?chain=31337#/judge (badge: LOCAL REHEARSAL)
 ```
 
 ### Use it on Aevum Testnet
@@ -266,7 +317,7 @@ Events: `InvoiceCreated`, `InvoicePaid`, `InvoiceRefunded`, `InvoiceCancelled`, 
 
 ## Testing
 
-- `forge test`: 28 tests. They cover the demo trio, each gate rule, the decision event, hold approve/reject, no double holds, duplicate blocking on every path, the Control Center (update, allowlist, freeze, revoke, owner-only), assistant-only processing, expiry, cooldown, pause, Confirmation of Payee and renames. Two fuzz tests check that *the assistant can never exceed the budget* and that *a HOLD never moves funds*.
+- `forge test`: 32 tests. They cover the demo trio, each gate rule, the decision event, hold approve/reject, no double holds, duplicate blocking on every path, the Control Center (update, allowlist, freeze, revoke, owner-only), assistant-only processing, expiry, cooldown, pause, Confirmation of Payee and renames. Two fuzz tests check that *the assistant can never exceed the budget* and that *a HOLD never moves funds*.
 - `node --test agent/agent.test.mjs`: 15 tests for the assistant runner, explanations, sanitizer, retries and payment links.
 - `scripts/e2e.mjs` asserts every gate decision against the expected value and fails loudly on any mismatch.
 
@@ -275,7 +326,7 @@ Events: `InvoiceCreated`, `InvoicePaid`, `InvoiceRefunded`, `InvoiceCancelled`, 
 - Testnet only. The contracts are not audited.
 - The attester is a single address, the deployer. In production this would be a KYB provider or a multisig.
 - The thresholds are fixed constants: anomaly at 3× the usual amount, and an average for the usual amount. They're simple on purpose, so anyone can predict a decision.
-- The "AI" layer is a deterministic explanation template. An LLM could replace it without changing the security model, because it has no authority.
+- There is no AI model in this repo. The agent is a script and the explanations are templates. A real AI agent would plug in where `agent.mjs` is, with the same limited authority.
 - Amounts are scaled 1:1000 on-chain because of the one-time faucet claim.
 
 ## Roadmap

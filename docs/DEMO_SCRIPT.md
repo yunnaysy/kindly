@@ -8,8 +8,8 @@
 
 | Time | Screen | What to do and say |
 |---|---|---|
-| 0:00 | Home | "AI assistants are starting to pay bills. Kindly makes sure they only pay the *right* bills. The contract decides, and the AI just explains." |
-| 0:20 | Run demo | Press **▶ RUN DEMO**. Confirm the budget approval and the mandate (cap $200, budget $500, usual $25, café only). |
+| 0:00 | Welcome | "AI should be able to pay for you, but it should never have unlimited permission to spend your money. In Kindly, fixed contract rules decide, not a model." Point at the mode badge (`LIVE TESTNET`). Short version: the [60-second demo](../README.md#60-second-demo) in the README, or **Settings → Guided demo**. |
+| 0:20 | Run demo | Press **RUN DEMO** (or use **Guided demo → Live on testnet** for the two-scenario version). Confirm the budget approval and the mandate (cap $200, budget $500, usual $25, café only). |
 | 0:50 | Run demo | **$24.99 → PAY** (risk 19): "usual amount, confirmed payee, paid automatically." Click the decision tx and show the `SafetyDecision` event. |
 | 1:15 | Run demo | **$149 → HOLD** (AmountAnomaly, 6.0× usual): "Under the cap, so a plain spending limit would have paid it. Kindly parks it and asks me." Click **Approve $149 payment** and sign it. |
 | 1:45 | Run demo | **$24.99 again, same invoice number → REJECT** (Duplicate, risk 95): "No double payments. Not through the assistant, not by approval, not even paying directly." The refunds run and the tokens come back. |

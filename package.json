@@ -13,6 +13,7 @@
     "test": "npm run test:contracts && npm run test:js",
     "deploy": "node scripts/deploy.mjs",
     "e2e": "node scripts/e2e.mjs",
+    "judge": "node scripts/judge.mjs",
     "agent": "node agent/agent.mjs",
     "dev": "vite web",
     "fonts": "bash scripts/fetch-fonts.sh web/public/fonts satoshi@400 satoshi@500 satoshi@700 sentient@400i",

@@ -178,3 +178,14 @@ The brief: look like a modern iOS fintech app, not a Web3 dashboard. Kindly was 
 - **The tab bar stays docked.** The cards float, but the bar doesn't become a floating pill: Expo's native-feel guidance calls that a web-app tell, and a docked bar keeps 44px targets clear of the home indicator.
 - **Copy unchanged in substance.** It still says "bounded allowance" (Kindly never holds funds), and it doesn't overclaim security: the testnet and no-audit note stays in Settings.
 - **Verification.** axe-core reports 0 violations on phone, tablet and desktop for Home (landing and connected), Wallet, Activity, Settings, the demo replay, Review and the sheets. `npm test` passes: forge 32/32 and JS 15/15.
+
+## Phase 3: honest modes, calm holds, guided demo (ChatGPT critique, Nov 2026)
+
+- **Entry screen with three paths.** Connect wallet · Try live; Explore demo without wallet (a replay of a recorded Aevum run); Watch the 60-second walkthrough, which says plainly that there is no video yet and opens the README script. The animation on the welcome screen is captioned "Sample animation, not live data."
+- **Mode badge on every screen.** `DEMO MODE`, `LIVE TESTNET` (amber when the wallet is on the wrong network) or `LOCAL REHEARSAL · private test chain · not real data`. The keyword is the one deliberate ALL-CAPS exception to the anti-slop rules: it is a status label, like a broadcast "LIVE" sign, not an eyebrow. The rest of the line is sentence case.
+- **Hold colours.** A held payment is a calm amber card ("Payment held · Review required"), because nothing is wrong yet: it is waiting for you. Red is reserved for rejected or failed payments. The card's copy is fixed: amount, merchant, reason, and "The payment is paused. Your agent cannot proceed without your decision."
+- **Why was this held?** A disclosure that lists the real values the rule used (this payment, usual payment, the ratio, the rule that fired, the decision transaction). Nothing in it is estimated.
+- **Honest labels.** Decisions say "Contract rule, deterministic" and never "AI". The glossary (Settings → Learn) defines Spending rules, Mandate, Allowance, Safety Gate and Hold in plain English, and the same terms are dotted-underlined buttons where they appear.
+- **Wallet and network pills.** The wallet pill reads "● Connected" with the short address and shows a focus ring only on `:focus-visible`. The network pill is a separate button; its sheet shows the network name, chain ID and a testnet note.
+- **Home order on phones.** What needs you first (hold cards), then "Your agent's spending rules" with the budget bar above the fold, then "Security status" (4 checks). Desktop puts the rules and security status side by side.
+- **Bottom nav.** Solid background (no translucency over content) and extra bottom padding with the safe area, so nothing hides behind it.

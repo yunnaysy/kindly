@@ -43,7 +43,7 @@ export function errorReason(err) {
   }
   const msg = err?.shortMessage || err?.message || String(err);
   const m = /reverted(?: with (?:the following reason|custom error)?)?:?\s*([A-Za-z_][A-Za-z0-9_]*)/.exec(msg);
-  return m && m[1] !== "The" ? m[1] : msg;
+  return m && !/^the$/i.test(m[1]) ? m[1] : msg;
 }
 
 export const HUMAN_ERRORS = {

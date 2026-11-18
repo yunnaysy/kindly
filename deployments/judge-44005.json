@@ -1,0 +1,197 @@
+{
+  "chainId": 44005,
+  "kindly": "0x944e66ba2642a2e83453e62bb48906f22eecb1b3",
+  "registry": "0xff6ce066fa19b68bd3150b8a2f0eff477fad2679",
+  "token": "0x456569838f1d43009A91ebA4263147Afd7233483",
+  "merchantName": "Sunrise Coffee Co",
+  "merchant": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+  "payer": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+  "agent": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+  "scale": "1 USD in the story = 0.001 tUSD8 on testnet",
+  "mandate": {
+    "id": "3",
+    "perPaymentCap": "0.2",
+    "totalBudget": "0.5",
+    "usual": "0.025",
+    "spentAfterApprove": "0.02499"
+  },
+  "allowance": {
+    "before": "0",
+    "set": "0.32299",
+    "afterPay": "0.298",
+    "afterApprove": "0.149",
+    "afterReject": "0.298"
+  },
+  "scenarios": {
+    "pay": {
+      "key": "pay",
+      "step": "agent → Safety Gate: INV-J1 $24.99",
+      "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+      "hash": "0xc81f404b6e98df6319732a5e59d9df6a29132cc03bab5e29c63419e0220f61b7",
+      "block": 3514938,
+      "explorer": "https://explorer-test.qday.info/tx/0xc81f404b6e98df6319732a5e59d9df6a29132cc03bab5e29c63419e0220f61b7",
+      "decision": "PAY",
+      "reason": "Ok",
+      "risk": 19,
+      "amount": "0.02499",
+      "usual": "0.025",
+      "invoiceId": "0xd4f4c9a5889646b90cf8226cd5992be5315718d46e4494e913844e18352998d1"
+    },
+    "hold": {
+      "key": "hold",
+      "step": "agent → Safety Gate: INV-J2 $149",
+      "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+      "hash": "0x67774622cce850b23fd3132e119582967e0428fec1b76e4c1cbacb1e74b08b51",
+      "block": 3514971,
+      "explorer": "https://explorer-test.qday.info/tx/0x67774622cce850b23fd3132e119582967e0428fec1b76e4c1cbacb1e74b08b51",
+      "decision": "HOLD",
+      "reason": "AmountAnomaly",
+      "risk": 75,
+      "amount": "0.149",
+      "usual": "0.02499",
+      "invoiceId": "0x43d26b10e1652b945430ea751ef4135c9a0eab50dd9817cd0aae074dfc6c09f7",
+      "approve": {
+        "key": "approve",
+        "step": "owner approves the held INV-J2 (explicit approval tx)",
+        "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+        "hash": "0x8ae0f97602756c3b0c76bfde9744be8cc2b7f899dce11dbd473f24680868781f",
+        "block": 3514977,
+        "explorer": "https://explorer-test.qday.info/tx/0x8ae0f97602756c3b0c76bfde9744be8cc2b7f899dce11dbd473f24680868781f"
+      },
+      "receipt": "0x3d5513493f792e6e1f7dbdac572e38ae3aeca003ebb643c5b9e76f4ae57300a8",
+      "reject": {
+        "gate": {
+          "key": "hold2",
+          "step": "agent → Safety Gate: INV-J3 $149",
+          "from": "0xB8F797954adb207c00d06B7D1074E6b10bCf80b3",
+          "hash": "0x4ebd64792432457b727aa9f81f3fff57ffeafe57bb7e1ab4249914f064f06a6e",
+          "block": 3514951,
+          "explorer": "https://explorer-test.qday.info/tx/0x4ebd64792432457b727aa9f81f3fff57ffeafe57bb7e1ab4249914f064f06a6e",
+          "decision": "HOLD",
+          "reason": "AmountAnomaly",
+          "risk": 75,
+          "amount": "0.149",
+          "usual": "0.02499",
+          "invoiceId": "0x6a6db7055f02f408d2b5dc761882db7e7bf49130a87d1842e4d63ae1d0832bc5"
+        },
+        "tx": {
+          "key": "reject",
+          "step": "owner rejects the held INV-J3 (nothing is paid)",
+          "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+          "hash": "0x72d354931a159cc549cdf6fb679b69d29127e045c0bea30ec99c14ffb769fb03",
+          "block": 3514958,
+          "explorer": "https://explorer-test.qday.info/tx/0x72d354931a159cc549cdf6fb679b69d29127e045c0bea30ec99c14ffb769fb03"
+        }
+      }
+    }
+  },
+  "setup": [
+    {
+      "key": "register",
+      "step": "café registers its name",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0x87fa6f1109c90d95e3684984dca7c10aab4e340eaf434365294717424cb9a7cb",
+      "block": 3514909,
+      "explorer": "https://explorer-test.qday.info/tx/0x87fa6f1109c90d95e3684984dca7c10aab4e340eaf434365294717424cb9a7cb"
+    },
+    {
+      "key": "verify",
+      "step": "attester verifies the café's name",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0xba23ecc22dfc4019880a6745488e236cf9d93d88514a4db7cf662c8cd8456247",
+      "block": 3514916,
+      "explorer": "https://explorer-test.qday.info/tx/0xba23ecc22dfc4019880a6745488e236cf9d93d88514a4db7cf662c8cd8456247"
+    },
+    {
+      "key": "allow",
+      "step": "payer allows exactly 0.32299 tUSD8 (bounded allowance)",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x2a84d9994d2a0a9cb0c8c346fa494615e852e0473f3d63c9ff1011befe4e9066",
+      "block": 3514923,
+      "explorer": "https://explorer-test.qday.info/tx/0x2a84d9994d2a0a9cb0c8c346fa494615e852e0473f3d63c9ff1011befe4e9066"
+    },
+    {
+      "key": "mandate",
+      "step": "payer sets the agent's spending rules: max $200 per payment, $500 budget, usual $25, Sunrise only, verified only",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x86291c2e2b91ed9cd501d64e98471f8ad19b92c989fdc54c4daac445a60e24d4",
+      "block": 3514929,
+      "explorer": "https://explorer-test.qday.info/tx/0x86291c2e2b91ed9cd501d64e98471f8ad19b92c989fdc54c4daac445a60e24d4"
+    },
+    {
+      "key": "inv1",
+      "step": "café issues INV-J1 ($24.99 → 0.02499 tUSD8)",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0xcf183d2db22a7a67bb6491b7701ea1fbff3b89e1f8aa253f23bff75fbf683844",
+      "block": 3514935,
+      "explorer": "https://explorer-test.qday.info/tx/0xcf183d2db22a7a67bb6491b7701ea1fbff3b89e1f8aa253f23bff75fbf683844"
+    },
+    {
+      "key": "inv3",
+      "step": "café issues INV-J3 ($149 → 0.149 tUSD8)",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0x56ff3e122eca40c20995fff353feeb6da814fe80330ab527223cfaec79814c8f",
+      "block": 3514944,
+      "explorer": "https://explorer-test.qday.info/tx/0x56ff3e122eca40c20995fff353feeb6da814fe80330ab527223cfaec79814c8f"
+    },
+    {
+      "key": "inv2",
+      "step": "café issues INV-J2 ($149 → 0.149 tUSD8)",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0x32d502ab17f76b2bccaaca52a1804cb6814e9dd572f07a8a52fd4654479c4ca6",
+      "block": 3514964,
+      "explorer": "https://explorer-test.qday.info/tx/0x32d502ab17f76b2bccaaca52a1804cb6814e9dd572f07a8a52fd4654479c4ca6"
+    }
+  ],
+  "cleanup": [
+    {
+      "key": "refundApprove",
+      "step": "café approves 0.17399 tUSD8 for refunds",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0x033dc8e5dfc5c8ec5ec6ac3bbb78c73a5212e23becf717669bb479fbef8588f5",
+      "block": 3514985,
+      "explorer": "https://explorer-test.qday.info/tx/0x033dc8e5dfc5c8ec5ec6ac3bbb78c73a5212e23becf717669bb479fbef8588f5"
+    },
+    {
+      "key": "refund1",
+      "step": "café refunds INV-J1",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0xadd1e11fc84d836709efa50e117b3115b591772ff1b12ec4c551beee13342451",
+      "block": 3514991,
+      "explorer": "https://explorer-test.qday.info/tx/0xadd1e11fc84d836709efa50e117b3115b591772ff1b12ec4c551beee13342451"
+    },
+    {
+      "key": "refund2",
+      "step": "café refunds INV-J2",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0x1a07cd2c5e9b33577a61404d541c0ac0336de4cd97dc388825569cf588be3005",
+      "block": 3514998,
+      "explorer": "https://explorer-test.qday.info/tx/0x1a07cd2c5e9b33577a61404d541c0ac0336de4cd97dc388825569cf588be3005"
+    },
+    {
+      "key": "cancel3",
+      "step": "café cancels the rejected INV-J3",
+      "from": "0xc1b20Ee50C71855277cDB762D10Ad09CA868e386",
+      "hash": "0xebed58727480aabf936ca5401319c293c304b7d3db5b273366d8c0d047b26a0e",
+      "block": 3515004,
+      "explorer": "https://explorer-test.qday.info/tx/0xebed58727480aabf936ca5401319c293c304b7d3db5b273366d8c0d047b26a0e"
+    },
+    {
+      "key": "revoke",
+      "step": "payer revokes the judge mandate",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x5a22225e7303369854ee629b78eaa4cb3990958207d67ed8dfa3d153db173b59",
+      "block": 3515010,
+      "explorer": "https://explorer-test.qday.info/tx/0x5a22225e7303369854ee629b78eaa4cb3990958207d67ed8dfa3d153db173b59"
+    },
+    {
+      "key": "allow0",
+      "step": "payer sets the allowance back to 0",
+      "from": "0xD7d365901a2267B860e54E1DfBD3deAd39D39858",
+      "hash": "0x9ef20b3634434970e1b2cf8e187b1454076a1b5330dbcd25768fe006960a9b9d",
+      "block": 3515012,
+      "explorer": "https://explorer-test.qday.info/tx/0x9ef20b3634434970e1b2cf8e187b1454076a1b5330dbcd25768fe006960a9b9d"
+    }
+  ],
+  "finishedAt": "2026-11-18T19:09:12.210Z"
+}

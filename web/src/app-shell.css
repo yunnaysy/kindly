@@ -277,3 +277,137 @@ button, .chip, .set-row, .hc-btn { -webkit-touch-callout: none; }
 .tile-txt { display: grid; gap: 2px; } .tile-txt b { font-weight: 600; } .tile-txt small { color: var(--muted); font-size: 13px; }
 .tile-go { color: var(--muted); }
 #nav svg, .side-freeze svg, .side-toggle svg { stroke-width: 1.9; }
+
+/* =====================================================================
+   Phase 3: honest mode badge, network + wallet pills, compact Home, hold card, Judge mode
+   ===================================================================== */
+/* Mode badge: the one place that says what you are looking at. The capitalised keyword is a status label, not an eyebrow. */
+.mode { display: flex; align-items: center; gap: 8px; width: calc(100% - 48px); max-width: 1120px; margin: 8px auto 0; padding: 7px 12px; border-radius: 12px; font: 500 12.5px/1.3 var(--f-ui); color: var(--muted); background: var(--surface); border: 1px solid var(--border); min-height: 34px; }
+.mode:empty { display: none; }
+.mode b { font: 700 11.5px/1 var(--f-ui); letter-spacing: .05em; color: var(--ink); white-space: nowrap; }
+.mode .mode-rest { min-width: 0; }
+.mode .mode-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--border-strong); }
+.mode.live { background: var(--ok-soft); border-color: #CFE6D8; color: #245B45; } .mode.live b { color: var(--ok); } .mode.live .mode-dot { background: #3FA176; }
+.mode.demo { background: var(--ai-soft); border-color: #D9D7EE; color: #47437A; } .mode.demo b { color: var(--ai); } .mode.demo .mode-dot { background: var(--ai); border-radius: 2px; }
+.mode.local { background: #F1EFEA; border-color: var(--border-strong); color: #4F4A44; } .mode.local b { color: var(--ink); } .mode.local .mode-dot { background: transparent; border: 2px solid #6F6860; }
+.mode.warn { background: var(--hold-soft); border-color: #EFD9A4; color: var(--hold); } .mode.warn b { color: var(--hold); } .mode.warn .mode-dot { background: #C9952B; }
+
+/* Network pill is a real button now. */
+button.net { cursor: pointer; min-height: 36px; }
+button.net:hover { border-color: var(--border-strong); }
+.kv.gloss dt { font-weight: 600; color: var(--ink); } .kv.gloss dd { color: var(--muted); }
+
+/* Wallet pill: no resting outline; the focus ring appears only for keyboard focus. */
+.addr-pill { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 14px 6px 10px; border-radius: 999px; border: 0; background: var(--surface); box-shadow: 0 1px 2px rgba(29,28,26,.06), 0 0 0 1px rgba(29,28,26,.05); color: var(--ink); font: 500 13px/1.15 var(--f-ui); cursor: pointer; transition: box-shadow var(--t-fast) var(--ease); }
+.addr-pill:hover { box-shadow: 0 1px 2px rgba(29,28,26,.08), 0 0 0 1px rgba(29,28,26,.09); }
+.addr-pill:focus { outline: none; } .addr-pill:focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
+.addr-pill .cdot { width: 8px; height: 8px; border-radius: 50%; background: #3FA176; box-shadow: 0 0 0 3px rgba(63,161,118,.16); flex: none; }
+.addr-pill .cdot.warn { background: #C9952B; box-shadow: 0 0 0 3px rgba(201,149,43,.18); }
+.addr-pill .pill-txt { display: grid; text-align: left; }
+.addr-pill .pill-txt b { font: 600 12.5px/1.1 var(--f-ui); } .addr-pill .pill-txt .mono { font-size: 11.5px; color: var(--muted); }
+
+/* Welcome paths */
+.paths { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; max-width: 560px; }
+.path { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 14px 14px 16px; background: var(--surface); border-radius: 18px; box-shadow: var(--sh-card); }
+.path-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--canvas); color: var(--coral-ink); }
+.path-ic svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.path-txt { display: grid; gap: 2px; } .path-txt b { font-weight: 600; } .path-txt small { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.path .btn { white-space: nowrap; }
+.hero-fig { margin: 0; display: grid; gap: 8px; justify-items: center; }
+
+/* Hold card: calm amber, thin border, a badge, details on white. */
+.holds { display: grid; gap: 12px; }
+.holdcard { border-radius: 20px; border: 1px solid #EDD9A8; background: #FCF6E8; padding: 4px; animation: viewIn var(--t-slow) var(--ease) both; }
+.hc-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 10px 8px 8px; }
+.hold-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--hold-soft); color: var(--hold); font: 600 12.5px/1 var(--f-ui); border: 1px solid #EDD9A8; }
+.hold-badge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.6; }
+.hc-req { font: 600 12.5px/1 var(--f-ui); color: var(--hold); }
+.hc-body { background: var(--surface); border-radius: 16px; padding: 14px 16px 16px; display: grid; gap: 8px; }
+.hc-amt .money.big .n { font-size: 30px; font-weight: 600; letter-spacing: -.02em; }
+.hc-to b { font-weight: 600; }
+.hc-reason, .hc-note { margin: 0; } .hc-note { color: var(--muted); }
+details.why { border-top: 1px solid var(--border); padding-top: 6px; }
+details.why > summary { cursor: pointer; font-weight: 600; font-size: 14px; min-height: 40px; display: flex; align-items: center; color: var(--ink); }
+details.why .body { display: grid; gap: 10px; padding: 4px 0 8px; }
+.decided { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--canvas); color: var(--muted); }
+.decided svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--ai); stroke-width: 1.8; stroke-linejoin: round; } .decided b { color: var(--ink); }
+
+/* Spending rules card */
+.agent-t { font-size: 17px; }
+.funds-note { display: flex; gap: 8px; align-items: center; margin: 0; color: var(--muted); }
+.funds-note svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
+.id-line { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.term { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 4px 2px; min-height: 32px; font: inherit; color: inherit; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.term svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; opacity: .7; }
+
+/* Security status */
+.secstat { display: grid; gap: 10px; }
+.secstat ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.secstat li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 0; }
+.secstat li + li { border-top: 1px solid var(--border); }
+.ss-ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--ok-soft); color: var(--ok); }
+.ss-ic svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.secstat li.off .ss-ic { background: var(--canvas); color: var(--muted); }
+.ss-txt { display: grid; } .ss-txt b { font-weight: 600; font-size: 14.5px; } .ss-txt small { color: var(--muted); font-size: 13px; }
+
+/* Settings: tinted Freeze state, quieter info rows */
+.set-row.freeze-row-s .set-ic { color: var(--frost); }
+.set-row.freeze-row-s.is-active .set-ic { background: var(--ok-soft); color: var(--ok); }
+.set-row.freeze-row-s.is-frozen .set-ic { background: var(--frost-soft); color: var(--frost); }
+.set-row .set-txt b + .spill { justify-self: start; margin: 2px 0; }
+.set-row.info { min-height: 52px; } .set-row.info .set-txt b { font-weight: 500; font-size: 14.5px; } .set-row.info .set-ic { opacity: .75; }
+
+/* Judge mode */
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 18px; background: rgba(48,46,43,.06); max-width: 640px; }
+.seg-b { display: grid; gap: 2px; text-align: left; padding: 10px 14px; min-height: 52px; border: 0; border-radius: 14px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
+.seg-b small { color: var(--muted); font-size: 12.5px; } .seg-b b { font-weight: 600; }
+.seg-b[aria-checked=true] { background: var(--surface); box-shadow: var(--sh-card); }
+.seg-b:disabled { cursor: not-allowed; opacity: .6; }
+.jscen { display: grid; gap: 12px; }
+.js-head { display: flex; gap: 12px; align-items: flex-start; } .js-head p { margin: 2px 0 0; }
+.js-n { width: 30px; height: 30px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: #fff; font: 600 14px/1 var(--f-ui); }
+.jbody > p { margin: 0; }
+.jout { border-radius: 16px; padding: 14px 16px; display: grid; gap: 8px; border: 1px solid var(--border); background: var(--surface); animation: viewIn var(--t-slow) var(--ease) both; }
+.jout ul { margin: 0; } .jout.PAY, .jout.APPROVED { background: #F3F9F5; border-color: #CFE6D8; }
+.jout.REJECT, .jout.FAILED { background: #FCF3F1; border-color: #F0D2CD; }
+.jout.big { padding: 22px; gap: 14px; }
+.jchoice { gap: 10px; } .jchoice .btn { flex: 1 1 0; }
+.jproof table { width: 100%; }
+.hidden { display: none !important; }
+
+/* Phones: compact Home, 4 tabs, solid tab bar, nothing hidden behind it. */
+@media (max-width: 640px) {
+  .mode { width: calc(100% - 24px); margin: 6px 12px 0; padding: 6px 10px; font-size: 12px; min-height: 30px; }
+  .mode .mode-rest { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #nav { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .side { background: rgba(250,249,246,.97); }
+  .main-col > main { padding: 14px 16px calc(var(--tab-h) + var(--sab) + 40px); }
+  .addr-pill { padding: 5px 12px 5px 9px; min-height: 44px; }
+  .addr-pill .pill-txt b { font-size: 12px; } .addr-pill .pill-txt .mono { font-size: 11px; }
+  .holdcard .hc-body { padding: 12px 14px 14px; gap: 6px; }
+  .hc-amt .money.big .n { font-size: 26px; }
+  .card.panel.agent { padding: 18px; gap: 12px; }
+  .card.panel.agent dl.facts { gap: 10px 0; }
+  .agent .remaining { font-size: 36px; }
+  .path { grid-template-columns: auto minmax(0, 1fr); } .path > .btn { grid-column: 1 / -1; width: 100%; }
+  .seg { grid-template-columns: 1fr; }
+}
+.dash-top.home-top { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+.hc-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+@media (max-width: 1023px) { .dash-top.home-top { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .page-head .lead { font-size: 14.5px; }
+  h1.title { font-size: 24px; }
+  .agent .gate-mark { display: none; }
+  .agent-t { font-size: 16px; }
+  .agent .remaining { font-size: 30px; }
+  .card.panel.agent { gap: 10px; }
+  .hc-top { padding: 6px 8px 6px 6px; }
+  .holdcard .hc-body { gap: 4px; }
+  details.why > summary { min-height: 44px; }
+}
+/* Spending-rules facts: a tidy 2-column list wherever the card is narrower than the full page. */
+.agent dl.facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 0; }
+.agent dl.facts > div + div { padding-left: 0; border-left: 0; }
+.agent dl.facts > div:nth-child(even) { padding-left: 14px; border-left: 1px solid var(--border); }
+#connect { min-height: 44px; }

@@ -11,6 +11,7 @@ import KindlyArt from "../../shared/abi/Kindly.json";
 import RegistryArt from "../../shared/abi/PayeeRegistry.json";
 import deployments from "./deployments.json";
 import recordedRuns from "./recorded-runs.json";
+import judgeRuns from "./judge-runs.json";
 import "./app-shell.css";
 import { initPwa, installSection, isStandalone, isMobileDevice, dragToDismiss } from "./pwa.js";
 
@@ -141,7 +142,8 @@ async function connect({ rerender = true } = {}) {
   if (!addr) return;
   state.account = getAddress(addr);
   state.wallet = createWalletClient({ chain: CHAIN, transport: custom(window.ethereum), account: state.account });
-  await ensureChain();
+  // Graceful mismatch: a refused switch keeps the wallet connected; the banner and badge say so and nothing is sent.
+  await ensureChain().catch(() => toast(`Connected, but your wallet is on another network. Switch to ${CHAIN.name} to send anything.`, "error"));
   window.ethereum.on?.("accountsChanged", (accs) => { if (accs && accs.length) return location.reload(); disconnectLocal(); });
   window.ethereum.on?.("chainChanged", () => location.reload());
   await refreshHeader();
@@ -155,8 +157,8 @@ function disconnectLocal() {
   c.className = "btn dark small"; c.removeAttribute("aria-haspopup"); c.removeAttribute("aria-expanded"); c.removeAttribute("aria-label");
   c.replaceChildren(ICON.wallet(), h("span", {}, "Connect"));
   document.getElementById("swName").textContent = "Not connected"; document.getElementById("swName").className = ""; document.getElementById("swNet").textContent = "Connect a wallet";
-  toast("Wallet disconnected. You can still watch the recorded demo.");
-  route();
+  toast("Wallet disconnected. You can still explore the demo.");
+  paintMode(); route();
 }
 /** The official MetaMask fox (brand pack from metamask.io/assets), shown unmodified next to the MetaMask name. */
 const fox = (size = 20) => h("img", { class: "fox", src: "./brand/metamask-fox.svg", alt: "", width: size, height: size });
@@ -172,8 +174,8 @@ function noWalletSheet() {
     mobile ? h("a", { class: "btn mm big wide", href: metamaskLink(), rel: "noopener" }, fox(22), "Open in MetaMask") : h("a", { class: "btn mm big wide", href: "https://metamask.io/download/", target: "_blank", rel: "noopener" }, fox(22), "Get MetaMask"),
     mobile ? h("ol", { class: "plain small" }, h("li", {}, "MetaMask opens this page in its own browser."), h("li", {}, "Tap Connect and pick an account."), h("li", {}, "Switch to QDay Aevum Testnet when asked.")) : null,
     h("hr", { class: "sep" }),
-    h("p", { class: "small muted" }, "Just looking? The recorded demo replays a real testnet run and needs no wallet."),
-    h("a", { class: "btn ghost wide", href: "#/demo?replay=1", "data-close": "" }, ICON.play(), "Watch the recorded demo"),
+    h("p", { class: "small muted" }, "Just looking? The guided demo replays real recorded testnet transactions and needs no wallet."),
+    h("a", { class: "btn ghost wide", href: "#/judge", "data-close": "" }, ICON.play(), "Explore the guided demo"),
   ]);
 }
 /** Bottom sheet on phones, centred dialog on larger screens. Native <dialog>: focus trap, Escape and backdrop close. */
@@ -202,37 +204,72 @@ async function ensureChain() {
     });
   }
 }
+/** Persistent mode badge: says, on every screen, whether what you see is sample/recorded data or your live testnet wallet. */
+function paintMode() {
+  const el = document.getElementById("mode"); if (!el) return;
+  const local = CHAIN.id !== 44005;
+  const replay = document.body.dataset.replay === "1";
+  let kind, key, rest;
+  if (replay) [kind, key, rest] = ["demo", "DEMO MODE", "replay of recorded testnet transactions · no wallet involved"];
+  else if (local) [kind, key, rest] = ["local", "LOCAL REHEARSAL", "private test chain · not real data"];
+  else if (!state.account) [kind, key, rest] = ["demo", "DEMO MODE", "sample & recorded data · connect a wallet to go live"];
+  else if (state.wrongNet) [kind, key, rest] = ["warn", "LIVE TESTNET", "wallet connected · wrong network, switch to Aevum"];
+  else [kind, key, rest] = ["live", "LIVE TESTNET", "wallet connected · network verified"];
+  el.className = `mode ${kind}`;
+  el.replaceChildren(h("span", { class: "mode-dot", "aria-hidden": "true" }), h("b", {}, key), h("span", { class: "mode-rest" }, rest));
+  el.setAttribute("aria-label", `${key}: ${rest}`);
+}
+let lastBlock = null;
+/** Network pill → a sheet with the network's name, chain ID and what "testnet" means here. */
+function networkSheet() {
+  const local = CHAIN.id !== 44005;
+  sheet(local ? "Local rehearsal chain" : "QDay Aevum Testnet", [
+    h("dl", { class: "kv" },
+      h("dt", {}, "Network"), h("dd", {}, local ? `${CHAIN.name} (on this computer)` : "QDay Aevum Testnet"),
+      h("dt", {}, "Chain ID"), h("dd", {}, h("code", {}, String(CHAIN.id))),
+      h("dt", {}, "Latest block"), h("dd", {}, lastBlock != null ? `#${lastBlock}` : "Unreachable right now"),
+      h("dt", {}, "Your wallet"), h("dd", {}, !state.account ? "Not connected" : state.wrongNet ? "On another network" : "On this network")),
+    h("p", { class: "small muted" }, local
+      ? "A private chain that runs only on this computer, for rehearsing. Nothing here is real data or real money."
+      : "A public test network. tQDAY and tUSD8 are free test tokens with no value; never send real funds to these contracts."),
+    state.wrongNet ? h("button", { class: "btn dark wide", type: "button", "data-close": "", onclick: () => ensureChain().then(refreshHeader).catch((e) => toast(humanError(e), "error")) }, "Switch network") : null,
+    local ? null : h("a", { class: "btn ghost wide", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Get test tokens", ICON.ext()),
+  ]);
+}
 async function refreshHeader() {
   const net = document.getElementById("net");
-  const label = CHAIN.id === 44005 ? "Aevum" : CHAIN.name;
+  const label = CHAIN.id === 44005 ? "Aevum" : "Local";
   try {
-    const bn = await pub.getBlockNumber();
-    net.replaceChildren(ICON.aevum(), h("span", { class: "net-l" }, label), h("span", { class: "sr-only" }, `, testnet, latest block ${bn}`));
+    const bn = await pub.getBlockNumber(); lastBlock = bn;
+    net.replaceChildren(ICON.aevum(), h("span", { class: "net-l" }, label), h("span", { class: "sr-only" }, ` testnet, chain ${CHAIN.id}. Network details`));
     net.title = `${CHAIN.name} · chain ${CHAIN.id} · block #${bn}`;
     net.className = "net ok";
   } catch {
+    lastBlock = null;
     net.replaceChildren(ICON.aevum(), h("span", {}, `${label} unreachable`));
     net.className = "net bad";
   }
+  net.onclick = networkSheet;
   if (state.account && window.ethereum) {
     const hex = await window.ethereum.request({ method: "eth_chainId" }).catch(() => null);
     state.wrongNet = hex != null && Number(hex) !== CHAIN.id;
     document.body.classList.toggle("wrong-net", state.wrongNet);
     const wn = document.getElementById("wrongNet");
-    if (state.wrongNet && !wn) document.getElementById("banner").after(h("div", { id: "wrongNet", class: "netwarn", role: "alert" }, h("span", {}, `Your wallet is on another network. Kindly runs on ${CHAIN.name}.`), h("button", { class: "btn dark small", type: "button", onclick: () => ensureChain().then(refreshHeader).catch((e) => toast(humanError(e), "error")) }, "Switch network")));
+    if (state.wrongNet && !wn) document.getElementById("banner").after(h("div", { id: "wrongNet", class: "netwarn", role: "alert" }, h("span", {}, `Your wallet is on another network. Kindly runs on ${CHAIN.name}. Nothing will be sent until you switch.`), h("button", { class: "btn dark small", type: "button", onclick: () => ensureChain().then(refreshHeader).catch((e) => toast(humanError(e), "error")) }, "Switch network")));
     else if (!state.wrongNet) wn?.remove();
   }
   if (state.account) {
     state.balance = D.token ? await pub.readContract({ address: D.token, abi: erc20Abi, functionName: "balanceOf", args: [state.account] }).catch(() => state.balance ?? 0n) : 0n;
     const c = document.getElementById("connect");
-    c.replaceChildren(...[ICON.wallet(), h("span", { class: "mono" }, short(state.account)), state.wrongNet ? h("span", { class: "warnd", "aria-hidden": "true" }) : null].filter(Boolean));
-    c.className = "btn ghost small addr-pill"; c.setAttribute("aria-haspopup", "dialog"); c.setAttribute("aria-expanded", String(!!document.getElementById("walletPop")));
-    c.setAttribute("aria-label", `Wallet ${short(state.account)}. Show balance`);
+    c.replaceChildren(h("span", { class: `cdot ${state.wrongNet ? "warn" : ""}`, "aria-hidden": "true" }), h("span", { class: "pill-txt" }, h("b", {}, state.wrongNet ? "Wrong network" : "Connected"), h("span", { class: "mono" }, short(state.account))));
+    c.className = "addr-pill"; c.setAttribute("aria-haspopup", "dialog"); c.setAttribute("aria-expanded", String(!!document.getElementById("walletPop")));
+    c.setAttribute("aria-label", `${state.wrongNet ? "Wrong network" : "Connected"}: wallet ${short(state.account)}. Show balance`);
     const pop = document.getElementById("walletPop"); if (pop) pop.querySelector(".wp-bal")?.replaceChildren(money(state.balance, "big"));
     const swn = document.getElementById("swName"); swn.textContent = short(state.account); swn.className = "mono";
     document.getElementById("swNet").textContent = state.wrongNet ? "Wrong network" : `${fmt(state.balance ?? 0n)} tUSD8 · ${CHAIN.id === 44005 ? "Aevum" : CHAIN.name}`;
     document.getElementById("sideWallet").setAttribute("aria-label", `Wallet ${short(state.account)}. Show balance`);
   }
+  paintMode();
 }
 /** Wallet panel: the balance lives here, not in the navbar. */
 function toggleWalletPanel() {
@@ -262,6 +299,7 @@ async function send(button, label, { address, abi, functionName, args, value }, 
   const wallet = signer || state.wallet;
   const account = signer ? signer.account : state.account;
   if (!signer) requireWallet();
+  if (!signer && state.wrongNet) { await ensureChain().catch(() => {}); await refreshHeader(); if (state.wrongNet) { const e = new Error(`Switch your wallet to ${CHAIN.name} first. Nothing was sent.`); toast(e.message, "error"); throw e; } }
   const original = button ? [...button.childNodes] : null;
   try {
     if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); button.title = signer ? "Working…" : "Confirm in your wallet…"; button.replaceChildren(h("span", { class: "spinner", "aria-hidden": "true" }), ...original.map((n) => n.cloneNode(true))); }
@@ -288,6 +326,37 @@ async function ensureAllowance(button, amount) {
 }
 
 const fromBlock = () => BigInt(D.deployBlock || 0);
+/** Kindly's event history. Aevum's public RPC answers eth_getLogs for at most 1,000 blocks, so the history is read
+ *  once in 1,000-block slices (a few in parallel), cached, and topped up incrementally. Filtering happens in memory. */
+const LOG_SPAN = CHAIN.id === 44005 ? 1000n : 1_000_000n;
+const logCache = { to: null, logs: [], pending: null };
+function kindlyLogs() {
+  if (logCache.pending) return logCache.pending;
+  logCache.pending = (async () => {
+    const head = await pub.getBlockNumber();
+    const start = logCache.to == null ? fromBlock() : logCache.to + 1n;
+    const ranges = [];
+    for (let a = start; a <= head; a += LOG_SPAN) ranges.push([a, a + LOG_SPAN - 1n > head ? head : a + LOG_SPAN - 1n]);
+    const got = []; let i = 0;
+    const worker = async () => {
+      while (i < ranges.length) {
+        const [a, b] = ranges[i++];
+        let tries = 0;
+        for (;;) { try { got.push(...(await pub.getLogs({ address: D.kindly, fromBlock: a, toBlock: b }))); break; } catch (e) { if (++tries > 2) throw e; await new Promise((r) => setTimeout(r, 400 * tries)); } }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(6, ranges.length) }, worker));
+    got.sort((x, y) => Number(x.blockNumber - y.blockNumber) || x.logIndex - y.logIndex);
+    logCache.logs.push(...parseEventLogs({ abi: K, logs: got, strict: false }).filter((l) => l.eventName));
+    logCache.to = head;
+  })().finally(() => { logCache.pending = null; });
+  return logCache.pending;
+}
+const same = (a, b) => (typeof a === "string" && typeof b === "string" ? a.toLowerCase() === b.toLowerCase() : a === b);
+async function events(eventName, args = {}) {
+  await kindlyLogs();
+  return logCache.logs.filter((l) => l.eventName === eventName && Object.entries(args).every(([k, v]) => same(l.args[k], v)));
+}
 const mandateStatus = (m) => (m.revoked ? "Revoked" : m.frozen ? "Frozen" : Date.now() / 1000 > Number(m.validUntil) ? "Expired" : "Active");
 const fmt = (u) => Number(fromUnits(u)).toLocaleString(undefined, { maximumFractionDigits: 6 });
 const reduceMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -342,26 +411,36 @@ const trustLink = (label, tab) => h("button", { class: "link small", type: "butt
 const PII = /[^\s@]+@[^\s@]+\.[a-z]{2,}|(?:\+?\d[\s-]?){9,}|\b(street|st\.|jalan|jl\.|road|avenue|apt)\b/i;
 
 // ------------------------------------------------------------------ Product (home)
+const REPO = "https://github.com/yunnaysy/kindly";
+/** Welcome: three honest ways in. No account, no email, no password: a wallet is the only identity. */
+function entryPaths() {
+  const path = (icon, title, sub, el) => h("li", { class: "path" }, h("span", { class: "path-ic", "aria-hidden": "true" }, icon), h("span", { class: "path-txt" }, h("b", {}, title), h("small", {}, sub)), el);
+  const connectBtn = h("button", { class: "btn dark", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, fox(18), "Connect");
+  return h("ul", { class: "paths", "aria-label": "Ways to try Kindly" },
+    path(ICON.wallet(), "Connect wallet · Try live", window.ethereum ? "MetaMask on QDay Aevum testnet. No sign-up, email or password." : isMobileDevice() ? "Open this page in the MetaMask app to connect." : "Needs a browser wallet such as MetaMask.", connectBtn),
+    path(ICON.play(), "Explore demo without wallet", "A guided replay of real, recorded testnet transactions.", h("a", { class: "btn ghost", href: "#/judge" }, "Start", h("span", { class: "arrow" }, ICON.arrow()))),
+    path(ICON.file(), "Watch the 60-second walkthrough", "No video yet: opens the written 60-second script in the README.", h("a", { class: "btn ghost", href: `${REPO}#60-second-demo`, target: "_blank", rel: "noopener" }, "Open", ICON.ext())));
+}
 function viewHome() {
   setTitle(null);
   const card = heroCard();
   return h("section", { class: "view" },
     h("div", { class: "hero" },
       h("div", {},
-        h("span", { class: "netchip big" }, ICON.aevum(), "Live on QDay Aevum testnet"),
+        h("span", { class: "netchip big" }, ICON.aevum(), "Runs on QDay Aevum testnet"),
         h("h1", { class: "display" }, "Payments, handled. ", h("em", {}, "Safely.")),
-        h("p", { class: "lead" }, "Your AI agent can pay invoices for you. Kindly makes sure every payment is verified, within your rules, and safe to approve."),
-        h("div", { class: "cta sticky-cta" }, h("a", { class: "btn big", href: "#/demo" }, "Run the live demo", h("span", { class: "arrow" }, ICON.arrow())), h("a", { class: "btn ghost big", href: "#/start" }, "Set up your agent")),
-        h("ul", { class: "proof" }, h("li", {}, "Decided on-chain"), h("li", {}, "Bounded allowances, your funds stay put"), h("li", {}, "Freeze or revoke in one tap"))),
-      card.el),
+        h("p", { class: "lead" }, "AI should be able to pay for you, but it should never have unlimited permission to spend your money. Kindly gives your agent a bounded allowance and fixed rules, and asks you about anything unusual."),
+        entryPaths(),
+        h("ul", { class: "proof" }, h("li", {}, "Rules checked by the contract"), h("li", {}, "Bounded allowance, funds stay in your wallet"), h("li", {}, "Freeze or revoke in one tap"))),
+      h("figure", { class: "hero-fig" }, card.el, h("figcaption", { class: "small muted" }, "Sample animation, not live data."))),
     h("div", { class: "steps3" },
-      step3("01", "Verify", "Every payee is checked against an on-chain registry. A look-alike name or a swapped link never gets paid."),
-      step3("02", "Control", "You set the mandate: per-payment cap, total budget, usual amount and allowed merchants. Change it any time."),
+      step3("01", "Verify", "Every payee is checked against an on-chain registry. A look-alike name or a swapped link is held for you or blocked."),
+      step3("02", "Control", "You set the spending rules: max per payment, total budget, usual amount, allowed merchants and an end date."),
       step3("03", "Confirm", "Routine bills pay themselves. Anything unusual waits for one tap from you. Duplicates are blocked outright.")),
     h("div", { class: "story" },
       h("blockquote", {}, "Kindly doesn't give AI your wallet. ", h("span", {}, "It gives AI a permission to spend.")),
-      h("p", { class: "muted", style: "max-width:640px" }, "Every invoice passes through an on-chain safety gate. Funds are governed by spending limits, verified recipients, and human approval when something looks unusual. We give AI agents financial autonomy without giving them unlimited authority."),
-      h("div", { class: "row" }, h("button", { class: "btn ghost", onclick: () => trustModal("funds") }, "How your funds are protected"), trustLink("What's visible on-chain", "privacy")),
+      h("p", { class: "muted", style: "max-width:640px" }, "Every invoice passes through an on-chain Safety Gate. Payments are bounded by spending limits, verified recipients, and your approval when something looks unusual."),
+      h("div", { class: "row" }, h("button", { class: "btn ghost", onclick: () => trustModal("funds") }, "How your funds are protected"), trustLink("What's visible on-chain", "privacy"), h("a", { class: "btn ghost", href: "#/demo" }, "3-invoice live demo")),
       D.kindly
         ? h("div", { class: "contracts" }, h("span", {}, "Kindly ", addrLink(D.kindly)), h("span", {}, "Payee registry ", addrLink(D.registry)), h("span", { class: "row", style: "gap:6px" }, tok(), addrLink(D.token)))
         : h("p", { class: "warn" }, `Contracts not deployed on ${CHAIN.name} yet.`)));
@@ -598,6 +677,209 @@ function viewDemo() {
   if (replay) setTimeout(() => replayBtn.click(), 400);
   return root;
 }
+// ------------------------------------------------------------------ Judge mode: two scenarios, real transactions, a decision you make
+const JUDGE_KEY = `kindly.judge.${CHAIN.id}`;
+/** A tx proof link that works for recorded (Aevum) and live steps alike. */
+function proofLink(st) {
+  if (!st?.hash) return h("span", { class: "muted small" }, "—");
+  const url = st.explorer || explorerTx(CHAIN.id, st.hash);
+  return h("span", { class: "hash", translate: "no" }, h("code", { title: st.hash }, short(st.hash)),
+    url ? h("a", { class: "hc-btn", href: url, target: "_blank", rel: "noopener", "aria-label": "View this transaction on the Aevum explorer (opens in a new tab)", title: "View on explorer" }, ICON.ext()) : null);
+}
+function viewJudge() {
+  setTitle("Guided demo");
+  const J = judgeRuns[aevumTestnet.id];
+  const canLive = !!(state.account && D.kindly);
+  let mode = canLive && !/replay=1/.test(location.hash) ? "live" : "replay";
+  const root = h("section", { class: "view judge" });
+  const setReplayBadge = () => { document.body.dataset.replay = mode === "replay" ? "1" : ""; paintMode(); };
+  const seg = h("div", { class: "seg", role: "radiogroup", "aria-label": "Demo mode" });
+  const segBtn = (m, label, sub) => {
+    const b = h("button", { type: "button", role: "radio", class: "seg-b", "aria-checked": String(mode === m), disabled: m === "live" && !canLive ? true : null }, h("b", {}, label), h("small", {}, sub));
+    b.onclick = () => { if (busy) return; mode = m; [...seg.children].forEach((x) => x.setAttribute("aria-checked", String(x === b))); setReplayBadge(); reset(); };
+    return b;
+  };
+  seg.append(
+    segBtn("replay", "Recorded replay", J ? "Real Aevum transactions, no wallet" : "Not recorded yet"),
+    segBtn("live", "Live on testnet", canLive ? "Your wallet, about 5 confirmations" : "Connect a wallet first"));
+  const rules = h("div", { class: "card jrules" },
+    h("div", { class: "row between" }, h("h2", { class: "h3" }, "The agent's spending rules"), term("Spending rules", "What is this?")),
+    h("dl", { class: "facts" },
+      h("div", {}, h("dt", {}, "Max per payment"), h("dd", {}, "$200")), h("div", {}, h("dt", {}, "Max budget"), h("dd", {}, "$500")),
+      h("div", {}, h("dt", {}, "Usual payment"), h("dd", {}, "$25")), h("div", {}, h("dt", {}, "Allowed merchants"), h("dd", {}, "One café"))),
+    h("p", { class: "small muted" }, "Testnet amounts are scaled 1:1000: $24.99 is 0.02499 tUSD8. Tokens are free test tokens."));
+  const s1 = h("div", { class: "jbody" }); const s2 = h("div", { class: "jbody" });
+  const scen = (n, title, sub, body) => h("section", { class: "card jscen", "aria-labelledby": `js${n}` }, h("div", { class: "js-head" }, h("span", { class: "js-n", "aria-hidden": "true" }, String(n)), h("div", {}, h("h2", { id: `js${n}`, class: "h3" }, title), h("p", { class: "small muted" }, sub))), body);
+  const proof = h("tbody", {});
+  const proofCard = h("div", { class: "card jproof hidden" }, h("h2", { class: "h3" }, "Proof"), h("p", { class: "small muted" }, "Every step of this run, in order, with its transaction."),
+    h("table", { class: "table" }, h("thead", {}, h("tr", {}, h("th", {}, "Step"), h("th", {}, "Result"), h("th", {}, "Transaction"))), proof), decidedBy());
+  const status = h("p", { class: "progress-line", role: "status" });
+  const start = h("button", { class: "btn big", type: "button" }, ICON.play(), "Start");
+  const resetBtn = h("button", { class: "btn ghost big", type: "button" }, "Reset");
+  let busy = false;
+  const say = (t, spin = false) => status.replaceChildren(...[spin ? h("span", { class: "spinner", "aria-hidden": "true" }) : null, h("span", {}, t)].filter(Boolean));
+  const addProof = (step, result, st) => { proof.append(h("tr", {}, h("td", {}, step), h("td", {}, result), h("td", {}, proofLink(st)))); proofCard.classList.remove("hidden"); };
+  const idle = (el, t) => el.replaceChildren(h("p", { class: "muted small" }, t));
+  const outcome = (kind, title, lines, st) => h("div", { class: `jout ${kind}` }, h("div", { class: "row" }, kind === "PAY" ? stamp("PAY") : kind === "REJECT" ? stamp("REJECT") : stamp(kind === "APPROVED" ? "PAY" : "HOLD"), h("b", {}, title)),
+    h("ul", { class: "plain small" }, lines.map((l) => h("li", {}, l))), st ? h("div", { class: "small" }, "Transaction ", proofLink(st)) : null);
+  const allowLine = (v) => h("span", {}, "Allowance left: ", h("b", { class: "n" }, `${v} tUSD8`));
+  function reset() {
+    proof.replaceChildren(); proofCard.classList.add("hidden");
+    idle(s1, "Your agent submits a $24.99 coffee-beans invoice to the Safety Gate.");
+    idle(s2, "Then a $149 espresso-machine invoice, about 6× the usual payment.");
+    say(mode === "replay" ? (J ? `Replays the recorded run of ${new Date(J.finishedAt).toLocaleString()}. Nothing is sent from your wallet.` : "No recorded run is available.") : "Runs live on testnet with your wallet and a throwaway test café and assistant kept in this browser.");
+    start.disabled = mode === "replay" && !J;
+  }
+  /** Shared Scenario 2 UI: the hold card with the judge's two choices. Resolves to "approve" or "reject". */
+  const choose = (args) => new Promise((resolve) => {
+    const ok = h("button", { class: "btn ok", type: "button" }, ICON.check(), "Approve");
+    const no = h("button", { class: "btn ghost", type: "button" }, ICON.cross(), "Reject");
+    ok.onclick = () => { ok.disabled = no.disabled = true; resolve("approve"); };
+    no.onclick = () => { ok.disabled = no.disabled = true; resolve("reject"); };
+    s2.replaceChildren(holdCard({ ...args, action: h("div", { class: "row jchoice" }, ok, no) }));
+    s2.querySelector("details.why").open = true;
+    say("Your turn: approve or reject the held payment.");
+    ok.focus({ preventScroll: true });
+  });
+
+  async function runReplay() {
+    const P = J.scenarios.pay, H = J.scenarios.hold, RJ = H.reject;
+    say("Scenario 1: the agent submits INV-J1 ($24.99).", true); await sleep(900);
+    s1.replaceChildren(outcome("PAY", "Paid automatically", [`${P.amount} tUSD8 vs usual ${P.usual} tUSD8 (${(Number(P.amount) / Number(P.usual)).toFixed(1)}×)`, RULE.Ok, `Risk ${P.risk}/100 from the contract`], P));
+    s1.querySelector("ul").append(h("li", {}, allowLine(J.allowance.afterPay)));
+    addProof("Agent submits INV-J1 $24.99", "PAY", P);
+    say("Scenario 2: the agent submits INV-J2 ($149).", true); await sleep(900);
+    const pick = await choose({ amount: toUnits(H.amount), usual: toUnits(H.usual), reason: H.reason, merchantName: J.merchantName, merchant: J.merchant, tx: H });
+    if (pick === "approve") {
+      addProof("Agent submits INV-J2 $149", "HOLD · Unusual amount", H);
+      say("Showing the recorded approval.", true); await sleep(700);
+      s2.replaceChildren(outcome("APPROVED", "Approved by the owner, then paid", ["Only the owner's own approval transaction released it.", `Paid ${H.amount} tUSD8 to ${J.merchantName}`, allowLine(J.allowance.afterApprove), "Owner-approved payments don't count against the agent's budget."], H.approve));
+      addProof("Owner approves INV-J2", "Paid", H.approve);
+    } else {
+      addProof("Agent submits INV-J3 $149", "HOLD · Unusual amount", RJ.gate);
+      say("Showing the recorded rejection.", true); await sleep(700);
+      s2.replaceChildren(outcome("REJECT", "Rejected by the owner", ["Nothing was paid.", allowLine(J.allowance.afterReject), "The café can only send a new invoice."], RJ.tx));
+      addProof("Owner rejects INV-J3", "Rejected · nothing paid", RJ.tx);
+    }
+    say(`Replay complete. The recorded run did both branches (INV-J2 approved, INV-J3 rejected); you saw the one you picked. Clean-up refunds: ${J.cleanup.length} transactions.`);
+  }
+
+  async function runLive() {
+    requireWallet();
+    const need0 = usdToUnits(24.99) + usdToUnits(149);
+    const bal0 = await pub.readContract({ address: D.token, abi: erc20Abi, functionName: "balanceOf", args: [state.account] });
+    if (bal0 < need0) { s1.replaceChildren(h("div", { class: "jout FAILED", role: "alert" }, h("b", {}, "Not enough test tokens"), h("p", { class: "small" }, `The live run needs ${fromUnits(need0)} tUSD8 in your wallet (you have ${fromUnits(bal0)}). Nothing was sent.`), CHAIN.id === 44005 ? h("a", { class: "btn ghost small", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Get test tokens", ICON.ext()) : null)); throw new Error("Not enough tUSD8 for the live run"); }
+    state.quiet = true;
+    const { agent } = demoKeys();
+    // A new throwaway café per run: the usual amount is your average with that café, so a fresh café makes the run repeatable.
+    const k = generatePrivateKey(); const saved = JSON.parse(localStorage.getItem(JUDGE_KEY) || "[]"); saved.push(k); localStorage.setItem(JUDGE_KEY, JSON.stringify(saved.slice(-5)));
+    const merchant = createWalletClient({ chain: CHAIN, transport: http(RPC), account: privateKeyToAccount(k) });
+    const NAME = "Sunrise Coffee Co";
+    const st = (r) => (r?.hash ? { hash: r.hash, explorer: explorerTx(CHAIN.id, r.hash) } : null);
+    const gasTop = CHAIN.id === 31337 ? parseEther("0.05") : parseEther("0.003");
+    for (const [who, w] of [["café", merchant], ["assistant", agent]]) {
+      const bal = await pub.getBalance({ address: w.account.address });
+      if (bal < gasTop / 2n) {
+        say(`Topping up the test ${who} with ${formatEther(gasTop)} tQDAY for gas. Confirm in your wallet.`, true);
+        const hash = await state.wallet.sendTransaction({ to: w.account.address, value: gasTop, account: state.account, chain: CHAIN });
+        await pub.waitForTransactionReceipt({ hash }); addProof(`Gas for the test ${who}`, "Sent", st({ hash }));
+      }
+    }
+    say("The test café registers its name.", true);
+    addProof("Café registers its name", "Registered", st(await send(null, "Register", { address: D.registry, abi: R, functionName: "register", args: [NAME, ""] }, merchant)));
+    const need = usdToUnits(24.99) + usdToUnits(149);
+    say(`Allow exactly ${fromUnits(need)} tUSD8. Confirm in your wallet.`, true);
+    const al = await ensureAllowance(null, need); addProof(`You allow ${fromUnits(need)} tUSD8 (bounded)`, al ? "Set" : "Already enough", st(al));
+    say("Set the agent's spending rules. Confirm in your wallet.", true);
+    const mr = await send(null, "Spending rules", { address: D.kindly, abi: K, functionName: "createMandate", args: [{ agent: agent.account.address, perPaymentCap: usdToUnits(200), totalBudget: usdToUnits(500), typicalAmount: usdToUnits(25), validUntil: BigInt(Math.floor(Date.now() / 1000) + 86400), cooldown: 0, anyMerchant: false, requireVerifiedPayee: false, merchants: [merchant.account.address] }] });
+    const mandateId = mr.result; addProof("You set the spending rules", `Mandate #${mandateId}`, st(mr));
+    const runId = Date.now().toString(36); const exp = BigInt(Math.floor(Date.now() / 1000) + 86400);
+    const issue = async (num, usdv, memo) => (await send(null, "Invoice", { address: D.kindly, abi: K, functionName: "createInvoice", args: [refFromNumber(`${num}-${runId}`), state.account, usdToUnits(usdv), exp, memo] }, merchant)).result;
+    const gate = async (id) => { const r = await send(null, "Gate", { address: D.kindly, abi: K, functionName: "agentProcess", args: [mandateId, id, nameHash(NAME)] }, agent); return { r, ev: parseEventLogs({ abi: K, eventName: "SafetyDecision", logs: r.receipt.logs })[0].args }; };
+    const allowNow = async () => fromUnits(await pub.readContract({ address: D.token, abi: erc20Abi, functionName: "allowance", args: [state.account, D.kindly] }));
+    say("Scenario 1: the agent submits a $24.99 invoice.", true);
+    const a = await issue("INV-J1", 24.99, "Weekly coffee beans");
+    const g1 = await gate(a); const d1 = DECISION[g1.ev.decision];
+    s1.replaceChildren(outcome(d1, d1 === "PAY" ? "Paid automatically" : `Result: ${OUTCOME[d1]}`, [`${fromUnits(g1.ev.amount)} tUSD8 vs usual ${fromUnits(g1.ev.usualAmount)} tUSD8`, RULE[REASON[g1.ev.reason]], allowLine(await allowNow())], st(g1.r)));
+    addProof("Agent submits INV-J1 $24.99", d1, st(g1.r));
+    say("Scenario 2: the agent submits a $149 invoice.", true);
+    const b = await issue("INV-J2", 149, "Espresso machine service");
+    const g2 = await gate(b); const d2 = DECISION[g2.ev.decision];
+    addProof("Agent submits INV-J2 $149", `${d2} · ${reasonLabel(REASON[g2.ev.reason])}`, st(g2.r));
+    const paid = d1 === "PAY" ? [[a, usdToUnits(24.99)]] : [];
+    if (d2 === "HOLD") {
+      const pick = await choose({ amount: g2.ev.amount, usual: g2.ev.usualAmount, reason: g2.ev.reason, merchantName: NAME, merchant: merchant.account.address, tx: st(g2.r) });
+      try {
+        if (pick === "approve") {
+          say("Approve in your wallet.", true);
+          const r = await send(null, "Approve", { address: D.kindly, abi: K, functionName: "approveHold", args: [b, nameHash(NAME)] });
+          s2.replaceChildren(outcome("APPROVED", "Approved by you, then paid", ["Your approval transaction released it.", allowLine(await allowNow()), "Owner-approved payments don't count against the agent's budget."], st(r)));
+          addProof("You approve INV-J2", "Paid", st(r)); paid.push([b, usdToUnits(149)]);
+        } else {
+          say("Reject in your wallet.", true);
+          const r = await send(null, "Reject", { address: D.kindly, abi: K, functionName: "rejectHold", args: [b] });
+          s2.replaceChildren(outcome("REJECT", "Rejected by you", ["Nothing was paid.", allowLine(await allowNow())], st(r)));
+          addProof("You reject INV-J2", "Rejected · nothing paid", st(r));
+          await send(null, "Cancel", { address: D.kindly, abi: K, functionName: "cancelInvoice", args: [b] }, merchant).catch(() => {});
+        }
+      } catch (e) {
+        s2.replaceChildren(h("div", { class: "jout FAILED", role: "alert" }, h("div", { class: "row" }, stamp("REJECT"), h("b", {}, "Your decision wasn't sent")), h("p", { class: "small" }, humanError(e)), h("p", { class: "small muted" }, "The payment is still held. Review it on Home, or press Reset to reject it.")));
+        throw e;
+      }
+    } else s2.replaceChildren(outcome(d2, `Result: ${OUTCOME[d2]}`, [`${fromUnits(g2.ev.amount)} tUSD8 vs usual ${fromUnits(g2.ev.usualAmount)} tUSD8`, RULE[REASON[g2.ev.reason]]], st(g2.r)));
+    // Give the test tokens back (signed by the throwaway café key, no wallet prompt).
+    const total = paid.reduce((x, [, v]) => x + v, 0n);
+    if (total > 0n) {
+      say("The test café refunds your test tokens.", true);
+      await send(null, "Approve refund", { address: D.token, abi: erc20Abi, functionName: "approve", args: [D.kindly, total] }, merchant);
+      for (const [id, v] of paid) addProof(`Café refunds ${fromUnits(v)} tUSD8`, "Refunded", st(await send(null, "Refund", { address: D.kindly, abi: K, functionName: "refund", args: [id, v] }, merchant)));
+    }
+    say("Done. Every step above is a real testnet transaction. Reset revokes the demo rules.");
+  }
+
+  /** Reset: clear the screen; in live mode also reject any held demo payment and revoke demo spending rules (your signature each). */
+  resetBtn.onclick = async () => {
+    if (busy) return;
+    if (mode === "live" && state.account && D.kindly) {
+      const { agent } = demoKeys();
+      try {
+        busy = true; resetBtn.disabled = start.disabled = true; say("Looking for leftover demo holds and rules…", true);
+        const mine = (await events("MandateCreated", { owner: state.account })).map((l) => l.args.id);
+        let n = 0;
+        for (const id of mine) {
+          const m = await pub.readContract({ address: D.kindly, abi: K, functionName: "getMandate", args: [id] });
+          if (!same(m.agent, agent.account.address) || m.revoked) continue;
+          for (const ev of await events("SafetyDecision", { mandateId: id })) {
+            if (DECISION[ev.args.decision] !== "HOLD") continue;
+            const hd = await pub.readContract({ address: D.kindly, abi: K, functionName: "getHold", args: [ev.args.invoiceId] });
+            if (hd.active) { await send(null, "Reject leftover hold", { address: D.kindly, abi: K, functionName: "rejectHold", args: [ev.args.invoiceId] }); n++; }
+          }
+          await send(null, "Revoke demo rules", { address: D.kindly, abi: K, functionName: "revokeMandate", args: [id] }); n++;
+        }
+        toast(n ? `Reset: ${n} demo item${n === 1 ? "" : "s"} cleared.` : "Nothing to clear.", "ok");
+      } catch (e) { toast(`Reset stopped: ${humanError(e)}`, "error"); }
+      finally { busy = false; resetBtn.disabled = false; state.quiet = false; }
+    }
+    reset();
+  };
+  start.onclick = async () => {
+    if (busy) return; busy = true; start.disabled = resetBtn.disabled = true; reset(); start.disabled = true;
+    try { await (mode === "replay" ? runReplay() : runLive()); }
+    catch (e) { say(`Stopped: ${humanError(e)}. Nothing else was sent. Press Reset to clean up.`); }
+    finally { busy = false; state.quiet = false; start.disabled = false; resetBtn.disabled = false; start.replaceChildren(ICON.play(), "Run again"); }
+  };
+  root.append(
+    pageHead(null, "Guided demo", "Two scenarios, about a minute. A normal payment passes; an unusual one waits for your decision. Every step links to a real Aevum transaction."),
+    seg, rules,
+    scen(1, "A normal payment passes", "$24.99 · Weekly coffee beans", s1),
+    scen(2, "An unusual payment waits for you", "$149 · Espresso machine service", s2),
+    h("div", { class: "runbar" }, status, h("div", { class: "row sticky-cta" }, resetBtn, start)),
+    proofCard,
+    h("p", { class: "small muted" }, "Also available: the ", h("a", { href: "#/demo" }, "3-invoice demo"), ", which adds a duplicate invoice that is blocked outright."));
+  setReplayBadge(); reset();
+  if (/autostart=1/.test(location.hash)) setTimeout(() => start.click(), 300);
+  return root;
+}
 function recordedRunCard() {
   const run = recordedRuns[CHAIN.id];
   if (!run?.decisions?.length) return h("div", {});
@@ -621,7 +903,7 @@ async function blockTime(bn) {
 }
 /** Latest allowlist of a mandate, rebuilt from MandateMerchantSet events (the contract has no list getter). */
 async function mandateMerchants(id) {
-  const logs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "MandateMerchantSet", args: { id }, fromBlock: fromBlock() }).catch(() => []);
+  const logs = await events("MandateMerchantSet", { id }).catch(() => []);
   const m = new Map(); for (const l of logs) m.set(l.args.merchant, l.args.allowed);
   return [...m].filter(([, ok]) => ok).map(([a]) => a);
 }
@@ -633,14 +915,78 @@ const connectCard = (what) => h("div", { class: "card panel empty-state" },
 
 // ------------------------------------------------------------------ Dashboard ("Your AI agent")
 /** Home (mode "home"): what needs you, your agent with Freeze, recent activity. Wallet (mode "wallet"): balance, allowance, every mandate and its settings. */
+/** What actually fired, worded from the contract's own checks (Kindly.sol evaluate()). */
+const RULE = {
+  AmountAnomaly: "Amount is 3× the usual payment or more → hold for your decision",
+  PayeeMismatch: "Registered name ≠ the name your agent submitted → hold for your decision",
+  PayeeUnverified: "These rules pay verified merchants only, and this one isn't verified → hold",
+  Duplicate: "Invoice was already paid → reject", NotOpen: "Invoice isn't payable → reject", Expired: "Invoice or rules expired → reject",
+  MerchantNotAllowed: "Merchant isn't on the allowed list → reject", OverCap: "Above max per payment → reject", OverBudget: "Above the budget left → reject",
+  PayerNotAllowed: "Invoice is addressed to another payer → reject", Ok: "Within every rule → paid automatically",
+};
+const ratioOf = (amount, usual) => (usual && BigInt(usual) > 0n ? Number(amount) / Number(usual) : null);
+/** "Who decided": every verdict is a fixed contract rule. The agent only proposes; the wording is a template. */
+const decidedBy = () => h("p", { class: "decided small" }, ICON.gate(), h("span", {}, h("b", {}, "Contract rule, deterministic. "), "Kindly's contract checks fixed rules; the same invoice always gets the same verdict. No AI model makes this decision. Your agent only proposes payments."));
+/** "Why was this held?": computed from the SafetyDecision event's own amount and usual values. */
+function whyHeld({ amount, usual, reason, tx, open = false }) {
+  const r = typeof reason === "string" ? reason : REASON[Number(reason)];
+  const x = ratioOf(amount, usual);
+  return h("details", { class: "why", open: open || null },
+    h("summary", {}, "Why was this held?"),
+    h("div", { class: "body" },
+      h("dl", { class: "kv" },
+        h("dt", {}, "This payment"), h("dd", {}, money(BigInt(amount))),
+        h("dt", {}, "Usual payment"), h("dd", {}, usual && BigInt(usual) > 0n ? money(BigInt(usual)) : "No usual amount yet"),
+        r === "AmountAnomaly" && x ? [h("dt", {}, "Difference"), h("dd", {}, h("b", {}, `${x.toFixed(1)}× usual`), h("small", { class: "muted" }, " · holds start at 3×"))] : null,
+        h("dt", {}, "Rule that fired"), h("dd", {}, RULE[r] || reasonLabel(r)),
+        tx ? [h("dt", {}, "Decision tx"), h("dd", {}, typeof tx === "string" ? txLink(tx) : proofLink(tx))] : null),
+      h("p", { class: "small muted" }, "Usual payment = your average with this merchant so far, or the usual amount in your spending rules before your first payment."),
+      decidedBy()));
+}
+/** Held payment: calm amber card, thin border, white details. Red is reserved for rejected or failed. */
+function holdCard({ amount, merchantName, merchant, reason, usual, tx, invoiceId, action }) {
+  const r = typeof reason === "string" ? reason : REASON[Number(reason)];
+  const x = ratioOf(amount, usual);
+  const why = r === "AmountAnomaly" && x ? `Unusual amount, ${x.toFixed(1)}× your usual payment` : reasonLabel(r);
+  return h("article", { class: "holdcard", "aria-label": `Payment held, review required: ${fromUnits(amount)} tUSD8` },
+    h("div", { class: "hc-top" }, h("span", { class: "hold-badge" }, ICON.pause(), "Payment held"), h("span", { class: "hc-req" }, "Review required")),
+    h("div", { class: "hc-body" },
+      h("div", { class: "hc-line" }, h("div", { class: "hc-amt" }, money(BigInt(amount), "big")), h("div", { class: "hc-to" }, h("span", { class: "muted small" }, "to "), h("b", {}, sanitizeText(merchantName || "", 40) || short(merchant)))),
+      h("p", { class: "hc-reason" }, h("span", { class: "muted" }, "Reason · "), why),
+      h("p", { class: "hc-note small" }, "The payment is paused. Your agent cannot proceed without your decision."),
+      whyHeld({ amount, usual, reason: r, tx }),
+      action || (invoiceId ? h("a", { class: "btn dark wide", href: `#/review/${invoiceId}` }, "Review payment") : null)));
+}
+/** Plain-English helper for a term. A tap opens a short definition. */
+const GLOSSARY = {
+  "Spending rules": "What your agent may pay: a max per payment, a total budget, a usual amount, which merchants, and an end date. The contract stores them as a mandate and enforces them on every payment.",
+  Mandate: "The on-chain record of your agent's spending rules. It has an ID, and only you can change, freeze or revoke it.",
+  Allowance: "How many tUSD8 the Kindly contract may pull from your wallet, set by you with a standard token approval. Your tokens stay in your wallet; set it to 0 any time.",
+  "Safety Gate": "The check every invoice goes through in the Kindly contract. It answers PAY, HOLD (waits for you) or REJECT using fixed rules.",
+  Hold: "A payment the Safety Gate paused for you. Nothing moves until you approve or reject it.",
+};
+const term = (t, label = t) => h("button", { class: "term", type: "button", onclick: () => sheet(t, [h("p", {}, GLOSSARY[t])]), "aria-label": `${label}: what does this mean?` }, label, ICON.help());
+/** Home "Security status": four facts, each read from the chain or from the contract's fixed rules. */
+function securityStatus(m, allowance, st) {
+  const item = (ok, t, sub) => h("li", { class: ok ? "ok" : "off" }, h("span", { class: "ss-ic", "aria-hidden": "true" }, ok ? ICON.check() : ICON.cross()), h("span", { class: "ss-txt" }, h("b", {}, t), h("small", {}, sub)));
+  const has = !!m && (st === "Active" || st === "Frozen");
+  return h("div", { class: "card secstat", role: "region", "aria-label": "Security status" },
+    h("h2", { class: "h3" }, "Security status"),
+    h("ul", {},
+      item(has, "Spending limit active", has ? `Max ${fmt(m.perPaymentCap)} tUSD8 per payment` : "No live spending rules yet"),
+      item(true, "Allowance bounded", `Kindly may pull at most ${fmt(allowance)} tUSD8`),
+      item(has, "Emergency freeze available", !has ? "Appears once your agent has rules" : st === "Frozen" ? "Frozen now: nothing can be paid" : "One tap stops every payment"),
+      item(true, "Approval required for unusual payments", "3× usual or more, or a name mismatch, waits for you")));
+}
+
 async function viewControl(mode = "home") {
   const wallet = mode === "wallet";
   setTitle(wallet ? "Wallet" : "Home");
   const root = h("section", { class: "view" });
   if (!state.account) { root.append(pageHead(null, wallet ? "Wallet" : "Your AI agent", wallet ? "Your balance, the bounded allowance and every mandate." : "What your AI assistant may pay, how much, and to whom."), connectCard(wallet ? "see your balance and allowance" : "see and manage your assistant's permissions")); return root; }
   requireWallet();
-  const head = h("div", {}, pageHead(wallet ? null : "Your AI agent", wallet ? "Wallet" : "Everything under control.", wallet ? "Your funds stay in your wallet. Kindly may only move the bounded allowance below." : null));
-  const top = h("div", { class: "dash-top" }, h("div", { class: "card panel" }, skeleton()), h("div", { class: "walletcard" }, skeleton()));
+  const head = h("div", {}, pageHead(null, wallet ? "Wallet" : "Home", wallet ? "Your funds stay in your wallet. Kindly may only move the bounded allowance below." : null));
+  const top = wallet ? h("div", { class: "dash-top" }, h("div", { class: "card panel" }, skeleton()), h("div", { class: "walletcard" }, skeleton())) : h("div", { class: "dash-top home-top" }, h("div", { class: "card panel" }, skeleton()), h("div", { class: "card" }, skeleton()));
   const holds = h("div", {});
   const list = h("div", { class: "stack", style: "gap:16px" });
   const recent = h("ul", { class: "activity" }, h("li", {}, skeleton()));
@@ -648,7 +994,7 @@ async function viewControl(mode = "home") {
   const funds = h("div", { class: "card panel funds" }, skeleton());
   const receipts = h("ul", { class: "activity rlist" }, h("li", {}, skeleton()));
   // Desktop: overview (agent + allowance) | holds and receipts. Tablet and phone: one column, holds first.
-  const demoTile = h("a", { class: "card tile", href: "#/demo" }, h("span", { class: "tile-ic", "aria-hidden": "true" }, ICON.play()), h("span", { class: "tile-txt" }, h("b", {}, "See the Safety Gate in action"), h("small", {}, "Live demo or the recorded run, no wallet needed")), h("span", { class: "tile-go", "aria-hidden": "true" }, ICON.chev()));
+  const demoTile = h("a", { class: "card tile", href: "#/judge" }, h("span", { class: "tile-ic", "aria-hidden": "true" }, ICON.play()), h("span", { class: "tile-txt" }, h("b", {}, "Run guided demo"), h("small", {}, "A normal payment, then an unusual one you approve or reject")), h("span", { class: "tile-go", "aria-hidden": "true" }, ICON.chev()));
   const recentCard = h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Recent activity"), h("a", { class: "small", href: "#/activity" }, "See all")), recent,
     h("details", {}, h("summary", {}, "Older decisions"), h("div", { class: "body" }, more)));
   const receiptsCard = h("div", { class: "card" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Your receipts"), h("a", { class: "small", href: "#/activity" }, "All receipts")), receipts);
@@ -663,7 +1009,7 @@ async function viewControl(mode = "home") {
         h("div", { class: "dash-side" }, recentCard)));
 
   async function load() {
-    const created = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "MandateCreated", args: { owner: state.account }, fromBlock: fromBlock() });
+    const created = await events("MandateCreated", { owner: state.account });
     const ids = created.map((l) => l.args.id).reverse();
     const ms = [];
     const cards = [];
@@ -676,18 +1022,19 @@ async function viewControl(mode = "home") {
       pub.readContract({ address: D.token, abi: erc20Abi, functionName: "allowance", args: [state.account, D.kindly] }),
     ]);
     const primary = ms.find(([, m]) => mandateStatus(m) === "Active") || ms.find(([, m]) => mandateStatus(m) === "Frozen") || ms[0];
-    top.replaceChildren(wallet ? walletCard(bal, allowance, load) : await agentCard(primary, load));
+    if (wallet) top.replaceChildren(walletCard(bal, allowance, load));
+    else top.replaceChildren(await agentCard(primary, load, allowance), securityStatus(primary?.[1], allowance, primary ? mandateStatus(primary[1]) : null));
     funds.replaceChildren(...fundsPanel(ms, allowance).childNodes);
     list.replaceChildren(...(cards.length ? cards : [h("div", { class: "card empty-state" }, h("p", { class: "muted" }, "No mandates yet. A mandate tells your agent what it may pay."), h("a", { class: "btn dark small", href: "#/start" }, "Set up your agent"))]));
 
-    const paidLogs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoicePaid", args: { paidBy: state.account }, fromBlock: fromBlock() }).catch(() => []);
+    const paidLogs = await events("InvoicePaid", { paidBy: state.account }).catch(() => []);
     receipts.replaceChildren(...(paidLogs.length ? await Promise.all(paidLogs.slice(-4).reverse().map(async (lg) => {
       const ts = await blockTime(lg.blockNumber);
       return h("li", {}, h("span", { class: "r-ic", "aria-hidden": "true" }, ICON.receipt()), h("div", { class: "a-main" }, money(lg.args.amount), h("span", { class: "small muted" }, lg.args.mandateId > 0n ? `Paid by your agent · mandate #${lg.args.mandateId}` : "Paid directly")),
         h("span", { class: "small muted a-time" }, ts ? h("time", { datetime: new Date(ts * 1000).toISOString() }, ago(ts)) : ""), h("a", { class: "small", href: `#/activity?id=${lg.args.id}`, "aria-label": "Verify this receipt" }, "Verify"));
     })) : [h("li", { class: "empty" }, h("span", { class: "muted" }, "No receipts yet. Every settled payment leaves one you can verify."))]));
     const decs = [];
-    for (const id of ids.slice(0, 12)) decs.push(...(await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "SafetyDecision", args: { mandateId: id }, fromBlock: fromBlock() })));
+    for (const id of ids.slice(0, 12)) decs.push(...(await events("SafetyDecision", { mandateId: id })));
     decs.sort((x, y) => Number(y.blockNumber - x.blockNumber));
     const item = async (ev) => {
       const ex = explainDecision({ ...ev.args, usual: ev.args.usualAmount });
@@ -706,15 +1053,12 @@ async function viewControl(mode = "home") {
       const inv = await pub.readContract({ address: D.kindly, abi: K, functionName: "getInvoice", args: [ev.args.invoiceId] });
       const payee = await pub.readContract({ address: D.registry, abi: R, functionName: "getPayee", args: [inv.merchant] });
       const ex = explainDecision({ ...ev.args, usual: ev.args.usualAmount, merchantName: payee.name });
-      pending.push(h("div", { class: "needs-row" },
-        h("div", { class: "stack", style: "gap:2px" }, h("strong", {}, money(inv.amount), " to ", sanitizeText(payee.name, 40) || short(inv.merchant)),
-          h("span", { class: "small" }, `${reasonLabel(ex.reason)} · Awaiting your approval`)),
-        h("a", { class: "btn dark", href: `#/review/${ev.args.invoiceId}` }, "Review payment")));
+      pending.push(holdCard({ amount: ev.args.amount, usual: ev.args.usualAmount, reason: ex.reason, merchantName: payee.name, merchant: inv.merchant, tx: ev.transactionHash, invoiceId: ev.args.invoiceId }));
     }
-    if (!wallet) head.replaceChildren(pageHead("Your AI agent", pending.length ? `${pending.length} payment${pending.length > 1 ? "s need" : " needs"} you.` : "Everything under control.",
-      pending.length ? "Your agent paused these because something looked unusual. Nothing moves until you decide." : "Your agent pays routine invoices within the limits below. Anything unusual waits for you."));
+    if (!wallet) head.replaceChildren(pageHead(null, pending.length ? `${pending.length} payment${pending.length > 1 ? "s need" : " needs"} you` : "All clear",
+      pending.length ? "Nothing moves until you decide." : "Routine payments run within your rules. Anything unusual waits for you."));
     if (!wallet) holds.replaceChildren(pending.length
-      ? h("div", { class: "attn", role: "region", "aria-label": "Payments that need you" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, pending.length > 1 ? `${pending.length} payments need you` : "1 payment needs you"), stamp("HOLD", true)), ...pending)
+      ? h("div", { class: "holds", role: "region", "aria-label": "Payments that need you" }, ...pending)
       : h("div", { class: "calm" }, ICON.check(), "Nothing is waiting for your approval."));
   }
   await load();
@@ -724,12 +1068,12 @@ async function viewControl(mode = "home") {
   return root;
 }
 
-/** The hero card of the dashboard: status, remaining budget, limits, and a Freeze that is never buried. */
-async function agentCard(entry, reload) {
+/** "Your agent's spending rules": budget left above the fold, the limits in plain words, Freeze never buried. */
+async function agentCard(entry, reload, allowance) {
   if (!entry) return h("div", { class: "card panel agent empty-state" },
-    h("span", { class: "es-icon" }, ICON.gate()), h("h2", { class: "h3" }, "Your agent has no permissions yet"),
-    h("p", { class: "muted" }, "Set a spending allowance and a mandate in three short steps. Or run the demo, which brings its own assistant."),
-    h("div", { class: "row" }, h("a", { class: "btn", href: "#/start" }, "Set up your agent"), h("a", { class: "btn ghost", href: "#/demo" }, "Run the demo")));
+    h("span", { class: "es-icon" }, ICON.gate()), h("h2", { class: "h3" }, "Your agent has no spending rules yet"),
+    h("p", { class: "muted" }, "Set a bounded allowance and spending rules in three short steps. Or run the guided demo, which brings its own test assistant."),
+    h("div", { class: "row" }, h("a", { class: "btn", href: "#/start" }, "Set up your agent"), h("a", { class: "btn ghost", href: "#/judge" }, "Run guided demo")));
   const [id, m, remaining] = entry;
   const st = mandateStatus(m);
   const shown = st === "Frozen" ? (m.totalBudget > m.spent ? m.totalBudget - m.spent : 0n) : st === "Active" ? remaining : 0n;
@@ -738,22 +1082,27 @@ async function agentCard(entry, reload) {
   const live = st === "Active" || st === "Frozen";
   const freeze = h("button", { class: `btn freeze ${m.frozen ? "on" : ""}` }, m.frozen ? ICON.play() : ICON.snow(), m.frozen ? "Unfreeze agent" : "Freeze agent");
   freeze.onclick = async () => {
-    if (!m.frozen && !confirm(`Freeze mandate #${id}? Your assistant can't pay anything until you unfreeze it.`)) return;
+    if (!m.frozen && !confirm("Freeze your agent? It can't pay anything until you unfreeze it.")) return;
     await send(freeze, m.frozen ? "Unfreeze" : "Freeze", { address: D.kindly, abi: K, functionName: "setFrozen", args: [id, !m.frozen] }); reload();
   };
-  const chip = st === "Active" ? h("span", { class: "chip ok live" }, "Active · Limited permissions") : st === "Frozen" ? h("span", { class: "chip sky" }, ICON.snow(), "Frozen") : h("span", { class: "chip bad" }, st);
+  const chip = st === "Active" ? h("span", { class: "chip ok live" }, "Agent active") : st === "Frozen" ? h("span", { class: "chip sky" }, ICON.snow(), "Frozen") : h("span", { class: "chip bad" }, st);
+  const date = (t) => h("time", { datetime: new Date(Number(t) * 1000).toISOString() }, new Date(Number(t) * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }));
   return h("div", { class: `card panel agent ${st.toLowerCase()}` },
-    h("div", { class: "row between" }, h("div", { class: "row" }, h("span", { class: "gate-mark" }, ICON.gate()), h("div", { class: "stack", style: "gap:0" }, h("strong", {}, `Mandate #${id}`), h("span", { class: "small muted" }, "Assistant ", addrLink(m.agent)))), chip),
-    h("div", { class: "stack", style: "gap:8px" },
-      h("span", { class: "small muted" }, st === "Frozen" ? "Remaining budget, paused" : "Remaining budget"),
-      h("div", { class: "remaining" }, h("span", { class: "n" }, fmt(shown)), h("small", {}, "of ", fmt(m.totalBudget), " "), tok(), h("span", { class: "pct" }, `${pctLeft}% available`)),
-      h("div", { class: "bar", role: "progressbar", "aria-valuenow": String(pctLeft), "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Budget available" }, h("span", { style: `--w:${Math.min(pctLeft, 100) / 100}` }))),
+    h("div", { class: "row between" }, h("div", { class: "row" }, h("span", { class: "gate-mark" }, ICON.gate()), h("h2", { class: "h3 agent-t" }, "Your agent's spending rules")), chip),
+    h("div", { class: "stack", style: "gap:6px" },
+      h("span", { class: "small muted" }, st === "Frozen" ? "Budget left, paused" : "Budget left"),
+      h("div", { class: "remaining" }, h("span", { class: "n" }, fmt(shown)), h("small", {}, "of ", fmt(m.totalBudget), " "), tok(), h("span", { class: "pct" }, `${pctLeft}% left`)),
+      h("div", { class: "bar", role: "progressbar", "aria-valuenow": String(pctLeft), "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Budget left" }, h("span", { style: `--w:${Math.min(pctLeft, 100) / 100}` }))),
     h("dl", { class: "facts" },
-      h("div", {}, h("dt", {}, "Payment limit"), h("dd", {}, money(m.perPaymentCap))),
-      h("div", {}, h("dt", {}, "Usual amount"), h("dd", {}, money(m.typicalAmount))),
+      h("div", {}, h("dt", {}, "Max budget"), h("dd", {}, money(m.totalBudget))),
+      h("div", {}, h("dt", {}, "Max per payment"), h("dd", {}, money(m.perPaymentCap))),
+      h("div", {}, h("dt", {}, "Usual payment"), h("dd", {}, money(m.typicalAmount))),
       h("div", {}, h("dt", {}, "Allowed merchants"), h("dd", {}, m.anyMerchant ? "Any merchant" : `${merchants.length} merchant${merchants.length === 1 ? "" : "s"}`, m.requireVerifiedPayee ? h("small", { class: "muted" }, " · verified only") : null)),
-      h("div", {}, h("dt", {}, "Valid until"), h("dd", {}, h("time", { datetime: new Date(Number(m.validUntil) * 1000).toISOString() }, new Date(Number(m.validUntil) * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }))))),
-    live ? h("div", { class: "freeze-row" }, freeze, h("span", { class: "small muted" }, m.frozen ? "Your agent can't pay anything while frozen." : "Stops every payment at once. You can unfreeze any time.")) : h("p", { class: "small muted" }, "This mandate can no longer spend."));
+      h("div", {}, h("dt", {}, "Expires"), h("dd", {}, date(m.validUntil))),
+      allowance != null ? h("div", {}, h("dt", {}, term("Allowance", "Allowance")), h("dd", {}, money(allowance))) : null),
+    h("p", { class: "funds-note small" }, ICON.lock(), "Funds stay in your wallet outside the allowance."),
+    live ? h("div", { class: "freeze-row" }, freeze, h("span", { class: "small muted" }, m.frozen ? "Your agent can't pay anything while frozen." : "Stops every payment at once.")) : h("p", { class: "small muted" }, "These rules can no longer spend."),
+    h("p", { class: "small muted id-line" }, term("Mandate", `Mandate #${id}`), " · assistant ", addrLink(m.agent)));
 }
 
 /** The one charcoal contrast moment: real wallet balance, read from the token contract. */
@@ -812,11 +1161,11 @@ async function mandateCard(id, reload, primary) {
   };
   const freeze = h("button", { class: "btn ghost small" }, m.frozen ? ICON.play() : ICON.snow(), m.frozen ? "Unfreeze" : "Freeze");
   freeze.onclick = async () => {
-    if (!m.frozen && !confirm(`Freeze mandate #${id}? Your assistant can't pay anything until you unfreeze it.`)) return;
+    if (!m.frozen && !confirm(`Freeze these spending rules (mandate #${id})? Your assistant can't pay anything until you unfreeze it.`)) return;
     await send(freeze, m.frozen ? "Unfreeze" : "Freeze", { address: D.kindly, abi: K, functionName: "setFrozen", args: [id, !m.frozen] }); reload();
   };
   const revoke = h("button", { class: "btn danger small" }, "Revoke forever");
-  revoke.onclick = async () => { if (!confirm(`Revoke mandate #${id} permanently? This can't be undone.`)) return; await send(revoke, "Revoke", { address: D.kindly, abi: K, functionName: "revokeMandate", args: [id] }); reload(); };
+  revoke.onclick = async () => { if (!confirm(`Revoke these spending rules (mandate #${id}) permanently? This can't be undone.`)) return; await send(revoke, "Revoke", { address: D.kindly, abi: K, functionName: "revokeMandate", args: [id] }); reload(); };
   const merchantIn = h("input", { placeholder: "0x… merchant address", class: "mono", maxlength: 42, autocomplete: "off", spellcheck: "false", name: "merchant" });
   const allow = h("button", { class: "btn ghost small" }, "Allow");
   const disallow = h("button", { class: "btn soft small" }, "Remove");
@@ -824,7 +1173,7 @@ async function mandateCard(id, reload, primary) {
   allow.onclick = setM(allow, true); disallow.onclick = setM(disallow, false);
   const chipCls = st === "Active" ? "ok live" : st === "Frozen" ? "sky" : "bad";
   return h("div", { class: `card panel mandate ${st.toLowerCase()}` },
-    h("div", { class: "row between" }, h("div", { class: "row" }, h("h3", {}, `Mandate #${id}`), h("span", { class: `chip ${chipCls}` }, st)), h("span", { class: "small muted" }, "assistant ", addrLink(m.agent))),
+    h("div", { class: "row between" }, h("div", { class: "row" }, h("h3", {}, primary ? "Spending rules (current)" : "Spending rules"), h("span", { class: `chip ${chipCls}` }, st)), h("span", { class: "small muted" }, `Mandate #${id} · assistant `, addrLink(m.agent))),
     h("div", { class: "mandate-hero" },
       h("div", { class: "stack" }, h("small", { class: "muted" }, st === "Frozen" ? "Remaining budget · paused" : "Remaining budget"), h("div", { class: "remaining sm" }, h("span", { class: "n" }, fmt(st === "Frozen" ? (m.totalBudget > m.spent ? m.totalBudget - m.spent : 0n) : remaining)), h("small", {}, `of ${fmt(m.totalBudget)} `), tok()), h("div", { class: "bar", role: "progressbar", "aria-valuenow": String(Math.min(pct, 100)), "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Budget used" }, h("span", { style: `--w:${Math.min(pct, 100) / 100}` }))),
       h("div", { class: "facts" },
@@ -1042,8 +1391,8 @@ async function viewReview() {
   const [payee, verified, decs, created] = await Promise.all([
     pub.readContract({ address: D.registry, abi: R, functionName: "getPayee", args: [inv.merchant] }),
     pub.readContract({ address: D.registry, abi: R, functionName: "isVerified", args: [inv.merchant] }),
-    pub.getContractEvents({ address: D.kindly, abi: K, eventName: "SafetyDecision", args: { invoiceId: id }, fromBlock: fromBlock() }),
-    pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoiceCreated", args: { id }, fromBlock: fromBlock() }).catch(() => []),
+    events("SafetyDecision", { invoiceId: id }),
+    events("InvoiceCreated", { id }).catch(() => []),
   ]);
   const ev = decs.filter((x) => DECISION[x.args.decision] === "HOLD").pop();
   const reason = REASON[hold.reason] || (ev ? REASON[ev.args.reason] : "AmountAnomaly");
@@ -1059,18 +1408,32 @@ async function viewReview() {
   const card = h("div", { class: "card panel review stack", style: "gap:22px" });
   const resolved = !hold.active;
   const approve = h("button", { class: "btn ok big" }, ICON.check(), "Approve payment");
-  const reject = h("button", { class: "btn danger big" }, ICON.cross(), "Reject");
+  const reject = h("button", { class: "btn ghost big" }, ICON.cross(), "Reject");
+  const failNote = h("div", { "aria-live": "polite" });
+  const allowNow = () => pub.readContract({ address: D.token, abi: erc20Abi, functionName: "allowance", args: [state.account, D.kindly] }).catch(() => null);
+  const failed = (what, e) => failNote.replaceChildren(h("div", { class: "jout FAILED", role: "alert" }, h("div", { class: "row" }, stamp("REJECT"), h("b", {}, `${what} failed`)), h("p", { class: "small" }, humanError(e)), h("p", { class: "small muted" }, "Nothing changed: the payment is still held. You can try again.")));
   approve.onclick = async () => {
-    state.quiet = true;
+    state.quiet = true; failNote.replaceChildren();
     try {
       await ensureAllowance(approve, inv.amount);
       const { hash, result } = await send(approve, "Approve payment", { address: D.kindly, abi: K, functionName: "approveHold", args: [id, nameHash(payee.name)] });
-      card.replaceChildren(receiptCard({ amount: inv.amount, merchantName: payee.name, merchant: inv.merchant, memo, invoiceId: id, hash, receipt: result, mandateId: hold.mandateId, decision: "HOLD", approved: true, risk: hold.risk }));
-    } catch { /* explained by send() */ } finally { state.quiet = false; }
+      const left = await allowNow();
+      card.replaceChildren(receiptCard({ amount: inv.amount, merchantName: payee.name, merchant: inv.merchant, memo, invoiceId: id, hash, receipt: result, mandateId: hold.mandateId, decision: "HOLD", approved: true, risk: hold.risk }),
+        h("div", { class: "after" }, h("dl", { class: "kv" }, h("dt", {}, "Approval tx"), h("dd", {}, txLink(hash)), left != null ? [h("dt", {}, "Allowance now"), h("dd", {}, money(left))] : null),
+          h("a", { class: "btn ghost wide", href: "#/" }, "Back to Home")));
+    } catch (e) { failed("Approval", e); } finally { state.quiet = false; }
   };
   reject.onclick = async () => {
     if (!confirm(`Reject this ${fromUnits(inv.amount)} tUSD8 payment to “${name}”? Nothing will be paid.`)) return;
-    try { await send(reject, "Reject payment", { address: D.kindly, abi: K, functionName: "rejectHold", args: [id] }); location.hash = "/controls"; } catch { /* explained */ }
+    failNote.replaceChildren();
+    try {
+      const { hash } = await send(reject, "Reject payment", { address: D.kindly, abi: K, functionName: "rejectHold", args: [id] });
+      const left = await allowNow();
+      card.replaceChildren(h("div", { class: "jout REJECT big" }, h("div", { class: "row" }, stamp("REJECT", true), h("h2", { class: "h3" }, "Payment rejected")),
+        h("p", {}, `Nothing was paid to ${name}. The invoice stays unpaid; the merchant can send a corrected one.`),
+        h("dl", { class: "kv" }, h("dt", {}, "Rejection tx"), h("dd", {}, txLink(hash)), left != null ? [h("dt", {}, "Allowance (unchanged)"), h("dd", {}, money(left))] : null),
+        h("a", { class: "btn ghost wide", href: "#/" }, "Back to Home")));
+    } catch (e) { failed("Rejection", e); }
   };
   card.append(
     h("div", { class: "row between" }, h("div", { class: "stack", style: "gap:4px" }, h("span", { class: "eyebrow" }, "New payment request"), h("h1", { class: "title" }, "Invoice received")),
@@ -1081,11 +1444,12 @@ async function viewReview() {
       h("div", {}, h("dt", {}, "Invoice"), h("dd", {}, memo || "No memo")),
       h("div", {}, h("dt", {}, "Usual amount"), h("dd", {}, usualAmt > 0n ? money(usualAmt) : "No history yet")),
       h("div", {}, h("dt", {}, "Difference"), h("dd", { class: ratio ? "hold-ink" : "" }, ratio ? `${ratio.toLocaleString(undefined, { maximumFractionDigits: 2 })}× usual` : "Not applicable"))),
-    h("div", { class: "why-box" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Why it's on hold"), stamp("HOLD", true)), h("p", {}, why)),
+    h("div", { class: "why-box" }, h("div", { class: "row between" }, h("h2", { class: "h3" }, "Why it's on hold"), stamp("HOLD", true)), h("p", {}, why), h("p", { class: "small" }, h("b", {}, "Rule that fired: "), RULE[reason] || reason), decidedBy()),
     h("div", { class: "grid2 outcomes" },
-      h("div", {}, h("strong", {}, "If you approve"), h("p", { class: "small muted" }, `Kindly pays ${fromUnits(inv.amount)} tUSD8 from your wallet to ${name}, once. Your mandate's limits don't change.`)),
+      h("div", {}, h("strong", {}, "If you approve"), h("p", { class: "small muted" }, `Kindly pays ${fromUnits(inv.amount)} tUSD8 from your wallet to ${name}, once. Your spending rules don't change.`)),
       h("div", {}, h("strong", {}, "If you reject"), h("p", { class: "small muted" }, "Nothing is paid. The invoice stays unpaid and the merchant can send a corrected one."))),
     resolved ? h("p", { class: "calm" }, ICON.check(), `This hold was already resolved. Invoice status: ${STATUS[inv.status]}.`) : h("div", { class: "row sticky-cta" }, approve, reject),
+    failNote,
     h("details", {}, h("summary", {}, "Technical details"), h("div", { class: "body" }, h("dl", { class: "kv" },
       h("dt", {}, "Safety Gate"), h("dd", {}, `HOLD · ${reason}`),
       h("dt", {}, "Risk score"), h("dd", {}, riskView(hold.risk)),
@@ -1195,7 +1559,7 @@ async function viewMerchant() {
   const list = h("div", { class: "card" }, h("h2", { class: "h3" }, "My invoices"), skeleton());
   root.append(list);
   async function loadList() {
-    const logs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoiceCreated", args: { merchant: state.account }, fromBlock: fromBlock() });
+    const logs = await events("InvoiceCreated", { merchant: state.account });
     const rows = [];
     for (const lg of logs.reverse().slice(0, 25)) {
       const inv = await pub.readContract({ address: D.kindly, abi: K, functionName: "getInvoice", args: [lg.args.id] });
@@ -1243,7 +1607,7 @@ async function viewPay() {
   const inv = await pub.readContract({ address: D.kindly, abi: K, functionName: "getInvoice", args: [invoiceId] });
   if (STATUS[inv.status] === "None") { root.append(h("div", { class: "card" }, h("p", { class: "warn" }, "Invoice not found on this network."))); return root; }
   const payee = await pub.readContract({ address: D.registry, abi: R, functionName: "getPayee", args: [inv.merchant] });
-  const created = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoiceCreated", args: { id: invoiceId }, fromBlock: fromBlock() }).catch(() => []);
+  const created = await events("InvoiceCreated", { id: invoiceId }).catch(() => []);
   const memo = created[0]?.args?.memo ?? "";
   const expectedIn = h("input", { value: parsed.expectedName ?? "", placeholder: "e.g. Sunrise Coffee Co…", maxlength: 64, name: "merchantName", autocomplete: "off" });
   const payto = h("div", { class: "payto" });
@@ -1309,10 +1673,10 @@ async function viewActivity() {
       if (!ok) return out.replaceChildren(h("div", { class: "cop bad" }, h("strong", {}, "No valid receipt for this invoice"), h("p", {}, `Status: ${STATUS[inv.status]}. A receipt exists only after the invoice is paid.`)));
       const [payee, paid, created] = await Promise.all([
         pub.readContract({ address: D.registry, abi: R, functionName: "getPayee", args: [inv.merchant] }),
-        pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoicePaid", args: { id }, fromBlock: fromBlock() }).catch(() => []),
-        pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoiceCreated", args: { id }, fromBlock: fromBlock() }).catch(() => []),
+        events("InvoicePaid", { id }).catch(() => []),
+        events("InvoiceCreated", { id }).catch(() => []),
       ]);
-      const decs = inv.mandateId > 0n ? await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "SafetyDecision", args: { invoiceId: id }, fromBlock: fromBlock() }).catch(() => []) : [];
+      const decs = inv.mandateId > 0n ? await events("SafetyDecision", { invoiceId: id }).catch(() => []) : [];
       const last = decs[decs.length - 1]?.args;
       out.replaceChildren(h("div", { class: "card receipt-wrap" }, receiptCard({ amount: inv.amount, merchantName: payee.name, merchant: inv.merchant, memo: created[0]?.args?.memo, invoiceId: null, hash: paid[0]?.transactionHash, receipt: inv.receipt, mandateId: inv.mandateId, decision: last ? DECISION[last.decision] : null, approved: last && DECISION[last.decision] === "HOLD", risk: last?.risk, paidBy: inv.paidBy })));
     } catch (e) { out.replaceChildren(h("p", { class: "warn" }, e.message?.startsWith("Invoice ID") ? e.message : humanError(e))); }
@@ -1321,7 +1685,7 @@ async function viewActivity() {
   const feed = h("div", { class: "card" }, h("h2", { class: "h3" }, "Latest settlements"), skeleton());
   root.append(feed);
   if (D.kindly) {
-    const logs = await pub.getContractEvents({ address: D.kindly, abi: K, eventName: "InvoicePaid", fromBlock: fromBlock() }).catch(() => []);
+    const logs = await events("InvoicePaid").catch(() => []);
     const rows = logs.reverse().slice(0, 30).map((lg) => h("tr", {}, h("td", {}, txLink(lg.transactionHash)), h("td", { class: "num" }, fmt(lg.args.amount)), h("td", {}, addrLink(lg.args.merchant)),
       h("td", {}, lg.args.mandateId > 0n ? h("span", { class: "chip lav" }, `assistant #${lg.args.mandateId}`) : h("span", { class: "chip" }, "direct")), h("td", {}, hashChip(lg.args.receipt, "receipt"))));
     feed.replaceChildren(h("h2", { class: "h3" }, "Latest settlements"), rows.length ? h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, h("tr", {}, ["Transaction", "tUSD8", "Merchant", "Path", "Receipt"].map((t, i) => h("th", { class: i === 1 ? "num" : "" }, t)))), h("tbody", {}, rows))) : h("p", { class: "muted" }, "No payments yet. Receipts appear here as soon as an invoice is paid."));
@@ -1339,6 +1703,16 @@ function viewSettings() {
   const pill = (txt, kind = "") => h("span", { class: `spill ${kind}` }, txt);
   const read = (kind) => h("button", { class: "btn ghost small", type: "button", onclick: () => trustModal(kind) }, "Read");
   const group = (title, ...rows) => h("div", { class: "set-group" }, title ? h("h2", { class: "set-h" }, title) : null, h("ul", { class: "set-list" }, ...rows));
+  // Freeze row shows the real state of your current spending rules, read from the contract.
+  const freezeRow = row(ICON.snow(), "Freeze your agent", "Stops every payment at once", go("#/?freeze=1", "Go to Home to freeze your agent"), "freeze-row-s");
+  if (state.account && D.kindly) (async () => {
+    const ids = (await events("MandateCreated", { owner: state.account })).map((l) => l.args.id).reverse();
+    let st = null;
+    for (const id of ids.slice(0, 12)) { const m = await pub.readContract({ address: D.kindly, abi: K, functionName: "getMandate", args: [id] }); const x = mandateStatus(m); if (x === "Active" || x === "Frozen") { st = x; if (x === "Active") break; } }
+    freezeRow.classList.add(st === "Frozen" ? "is-frozen" : st === "Active" ? "is-active" : "is-none");
+    freezeRow.querySelector(".set-txt small").textContent = st === "Frozen" ? "Nothing can be paid until you unfreeze" : st === "Active" ? "Stops every payment at once" : "No live spending rules yet";
+    freezeRow.querySelector(".set-txt b").after(h("span", { class: `spill ${st === "Frozen" ? "sky" : st === "Active" ? "ok" : ""}` }, st === "Frozen" ? "Frozen" : st === "Active" ? "Agent active" : "No agent"));
+  })().catch(() => {});
   const disconnect = async () => {
     // A web page can't log a wallet out. MetaMask supports revoking this site's account permission; Kindly forgets the account either way.
     await window.ethereum?.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] }).catch(() => {});
@@ -1350,18 +1724,21 @@ function viewSettings() {
         state.account
           ? row(h("span", { class: "fox-av" }, fox(20)), h("code", {}, short(state.account)), state.wrongNet ? "MetaMask · wrong network" : "MetaMask · connected wallet", state.wrongNet ? pill("Wrong network", "warn") : pill("Connected", "ok"), "tap-row")
           : row(h("span", { class: "fox-av" }, fox(20)), "Connected wallet", window.ethereum ? "Not connected" : isMobileDevice() ? "Open Kindly in the MetaMask app to connect" : "Needs a browser wallet such as MetaMask", h("button", { class: "btn dark small", type: "button", onclick: () => connect().catch((e) => toast(humanError(e), "error")) }, "Connect")),
-        row(ICON.aevum(), CHAIN.id === 44005 ? "QDay Aevum Testnet" : CHAIN.name, `Chain ${CHAIN.id} · test tokens only`, h("a", { class: "small", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Faucet"))),
+        row(ICON.aevum(), CHAIN.id === 44005 ? "QDay Aevum Testnet" : CHAIN.name, CHAIN.id === 44005 ? `Chain ${CHAIN.id} · test tokens only` : `Chain ${CHAIN.id} · local rehearsal, not real data`, CHAIN.id === 44005 ? h("a", { class: "small", href: FAUCET_URL, target: "_blank", rel: "noopener" }, "Faucet") : null)),
       group("Security & Permissions",
-        row(ICON.snow(), "Freeze your agent", "Stops every payment at once. Unfreeze any time.", go("#/?freeze=1", "Go to Home to freeze your agent")),
-        row(ICON.gate(), "Allowance and mandates", "Kindly may only move a bounded allowance. Reduce it to 0 any time.", go("#/wallet", "Open Wallet")),
-        row(ICON.shield(), "How your funds are protected", "Limits, verified merchants, your approval", read("funds")),
-        row(ICON.file(), "What's visible on-chain", "Keep personal details out of memos", read("privacy"))),
+        freezeRow,
+        row(ICON.gate(), "Allowance and spending rules", "A bounded allowance. Set it to 0 any time.", go("#/wallet", "Open Wallet"))),
+      group("Learn",
+        row(ICON.shield(), "How your funds are protected", null, read("funds"), "info"),
+        row(ICON.file(), "What's visible on-chain", null, read("privacy"), "info"),
+        row(ICON.help(), "Glossary", "Spending rules, allowance, Safety Gate, hold", h("button", { class: "btn ghost small", type: "button", onclick: () => sheet("Glossary", h("dl", { class: "kv gloss" }, Object.entries(GLOSSARY).map(([k, v]) => [h("dt", {}, k), h("dd", {}, v)]))) }, "Open"), "info")),
       group("Notifications",
         row(ICON.bell(), "Payments that need you", "Holds show up on Home within seconds. Push notifications aren't available yet.", pill("In-app")))),
     h("div", { class: "stack", style: "gap:22px" },
       h("div", { class: "set-group" }, h("h2", { class: "set-h" }, "App"), installSection(h, ICON)),
       group("Help & Support",
-        row(ICON.play(), "Recorded demo", "Replays a real testnet run, no wallet needed", go("#/demo?replay=1", "Watch the recorded demo")),
+        row(ICON.play(), "Guided demo", "Two scenarios with real testnet transactions", go("#/judge", "Open the guided demo")),
+        row(ICON.file(), "60-second walkthrough", "Written script in the README. No video yet.", h("a", { class: "set-go", href: `${REPO}#60-second-demo`, target: "_blank", rel: "noopener", "aria-label": "Open the 60-second walkthrough (new tab)" }, ICON.ext())),
         row(ICON.help(), "Source code and docs", "MIT licensed, on GitHub", h("a", { class: "set-go", href: "https://github.com/yunnaysy/kindly", target: "_blank", rel: "noopener", "aria-label": "Open the source code on GitHub (new tab)" }, ICON.ext()))),
       state.account ? group(null, h("li", { class: "set-row danger" }, h("button", { class: "set-btn", type: "button", onclick: disconnect }, ICON.logout(), "Disconnect wallet"))) : null,
       h("p", { class: "small muted" }, "Testnet software with automated tests and no external audit. Never use it with real funds."))));
@@ -1369,7 +1746,7 @@ function viewSettings() {
 }
 
 // ------------------------------------------------------------------ router
-const TAB_TITLE = (p) => p.startsWith("/demo") ? "Live demo" : /^\/(control|start|review)/.test(p) ? "Home" : /^\/(invoices|merchant|pay|activity)/.test(p) ? "Activity" : p.startsWith("/wallet") ? "Wallet" : p.startsWith("/settings") ? "Settings" : "Home";
+const TAB_TITLE = (p) => p.startsWith("/judge") ? "Guided demo" : p.startsWith("/demo") ? "Live demo" : /^\/(control|start|review)/.test(p) ? "Home" : /^\/(invoices|merchant|pay|activity)/.test(p) ? "Activity" : p.startsWith("/wallet") ? "Wallet" : p.startsWith("/settings") ? "Settings" : "Home";
 /** Phones: tables become stacked cards; each cell gets its column name as a label. */
 new MutationObserver(() => { for (const t of $app.querySelectorAll("table:not([data-labelled])")) { const hs = [...t.querySelectorAll("thead th")].map((x) => x.textContent); t.querySelectorAll("tbody tr").forEach((tr) => [...tr.children].forEach((td, i) => hs[i] && td.setAttribute("data-label", hs[i]))); if (t.tBodies[0]?.rows.length) t.dataset.labelled = "1"; } }).observe($app, { childList: true, subtree: true });
 let lastTab = -1, lastPath = "";
@@ -1399,9 +1776,11 @@ async function route() {
   const deeper = ti === lastTab && path !== lastPath && path.split("/").length > (lastPath.split("/").length || 0);
   document.documentElement.dataset.dir = deeper ? "push" : ti === lastTab ? "same" : "tab"; lastTab = ti; lastPath = path;
   $app.replaceChildren(h("section", { class: "view" }, skeleton()));
+  if (!path.startsWith("/judge") && document.body.dataset.replay) { document.body.dataset.replay = ""; paintMode(); }
   try {
     let v;
-    if (path.startsWith("/demo")) v = viewDemo();
+    if (path.startsWith("/judge")) v = viewJudge();
+    else if (path.startsWith("/demo")) v = viewDemo();
     else if (path.startsWith("/control")) v = await viewControl("home");
     else if (path.startsWith("/wallet")) v = await viewControl("wallet");
     else if (path.startsWith("/start")) v = await viewStart();
@@ -1451,8 +1830,8 @@ document.getElementById("connect").onclick = () => (state.account ? toggleWallet
 window.addEventListener("hashchange", () => { document.getElementById("walletPop")?.remove(); route(); window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); });
 window.addEventListener("scroll", () => document.querySelector(".top")?.classList.toggle("scrolled", window.scrollY > 4), { passive: true });
 if (!D.kindly) banner(`Kindly is not deployed on ${CHAIN.name} yet. Read-only mode. Test tokens: ${FAUCET_URL}`);
-else if (CHAIN.id !== 44005) banner(`Local development chain (${CHAIN.name}). Testnet tokens only.`);
 void REASON;
+paintMode();
 refreshHeader();
 setInterval(refreshHeader, 15000);
 initPwa({ h, icon: ICON, appName: "Kindly", offlineText: "Wallet and payment state may be outdated. Balances, holds and receipts refresh when you reconnect." });

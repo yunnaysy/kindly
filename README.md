@@ -12,7 +12,7 @@ The gate is a set of **fixed, deterministic contract rules**, not an AI model. T
 |---|---|
 | ![Home: one payment needs you, allowance left](docs/screenshots/v2-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v2-mobile-review-confirm.png) |
 
-**Demo video:** [docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:02, English voiceover and captions, recorded from the live site in no-wallet replay mode).
+**Demo video:** [docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:10, English voiceover (edge-tts neural voice) and burned-in captions, recorded from the redesigned live site; the Home, review and Activity scenes come from a labelled local rehearsal because the live site has no connected wallet).
 
 Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md) · Pitch: [docs/PITCH.md](docs/PITCH.md)
 

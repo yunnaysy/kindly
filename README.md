@@ -6,6 +6,8 @@ Kindly lets small businesses send stablecoin invoices as a link or QR code, and 
 
 Built for **Aevum Builder Challenge #1** on **QDay Aevum Testnet** (chain `44005`), using the official test stablecoin **tUSD8**.
 
+**Live demo:** [https://kindly-lemon.vercel.app](https://kindly-lemon.vercel.app)
+
 ![Run demo: three invoices, three decisions](docs/screenshots/02-demo-complete.png)
 
 Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md)

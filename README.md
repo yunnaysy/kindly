@@ -12,9 +12,9 @@ The gate is a set of **fixed, deterministic contract rules**, not an AI model. T
 |---|---|---|---|
 | ![Welcome: floating 3D objects, big title, black pill Connect](docs/screenshots/v3-mobile-welcome.png) | ![Home: greeting, allowance card with the 3D shield, colour carousel](docs/screenshots/v3-mobile-home.png) | ![Review: strong confirmation before signing](docs/screenshots/v3-mobile-review-confirm.png) | ![Desktop welcome](docs/screenshots/v3-desktop-welcome.png) |
 
-**Demo video (2:10):** [![Kindly demo video poster: click to play](docs/video/kindly-demo-poster.png)](docs/video/kindly-demo.mp4)
+**Demo video (1:56):** [![Kindly demo video poster: click to play](docs/video/kindly-demo-poster.png)](docs/video/kindly-demo.mp4)
 
-[docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (2:10, English voiceover (edge-tts neural voice) and burned-in captions, recorded from the redesigned live site; the Home, review and Activity scenes come from a labelled local rehearsal because the live site has no connected wallet).
+[docs/video/kindly-demo.mp4](docs/video/kindly-demo.mp4) (1:56, 13 MB). English voiceover (edge-tts neural voice), burned-in captions and a music bed. The app screens were captured from the live site ([kindly-lemon.vercel.app](https://kindly-lemon.vercel.app)) in Demo Mode, a labelled replay of a recorded run on QDay Aevum Testnet (chain 44005); the proof scene lists the PAY, HOLD, REJECT and APPROVE transactions from [`deployments/judge-44005.json`](deployments/judge-44005.json).
 
 Design system: [docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md) · Security, custody & privacy: [docs/SECURITY.md](docs/SECURITY.md) · Pitch: [docs/PITCH.md](docs/PITCH.md)
 
